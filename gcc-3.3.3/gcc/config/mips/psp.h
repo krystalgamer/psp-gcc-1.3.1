@@ -52,6 +52,10 @@ Boston, MA 02111-1307, USA.  */
 #undef MULTILIB_DEFAULTS
 #define MULTILIB_DEFAULTS { "EL" }
 
+/* Do not put data in the small data section by default.  */
+#undef MIPS_DEFAULT_GVALUE
+#define MIPS_DEFAULT_GVALUE 0
+
 /* Allow objects (e.g. VFPU vectors) to be aligned to 16 bytes.  */
 #undef BIGGEST_ALIGNMENT
 #define BIGGEST_ALIGNMENT 128
