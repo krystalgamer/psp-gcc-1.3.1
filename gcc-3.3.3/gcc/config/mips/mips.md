@@ -4518,11 +4518,10 @@ move\\t%0,%z4\\n\\
 
   if (GET_CODE (operands[1]) != MEM)
     {
+      /* The Allegrex 3.1 has seh.  Without optimization, use the shift
+	 sequence like the other MIPS targets.  */
       if (TARGET_ALLEGREX31 && optimize)
-	{
-	  emit_insn (gen_extendhisi2_allegrex (operands[0], operands[1]));
-	  DONE;
-	}
+	emit_insn (gen_extendhisi2_allegrex (operands[0], operands[1]));
       else
 	{
 	  rtx op1   = gen_lowpart (SImode, operands[1]);
@@ -4531,8 +4530,8 @@ move\\t%0,%z4\\n\\
 
 	  emit_insn (gen_ashlsi3 (temp, op1, shift));
 	  emit_insn (gen_ashrsi3 (operands[0], temp, shift));
-	  DONE;
 	}
+      DONE;
     }
 }")
 
@@ -4588,11 +4587,10 @@ move\\t%0,%z4\\n\\
 
   if (GET_CODE (operands[1]) != MEM)
     {
+      /* The Allegrex 3.1 has seb.  Without optimization, use the shift
+	 sequence like the other MIPS targets.  */
       if (TARGET_ALLEGREX31 && optimize)
-	{
-	  emit_insn (gen_extendqisi2_allegrex (operands[0], operands[1]));
-	  DONE;
-	}
+	emit_insn (gen_extendqisi2_allegrex (operands[0], operands[1]));
       else
 	{
 	  rtx op1   = gen_lowpart (SImode, operands[1]);
@@ -4601,8 +4599,8 @@ move\\t%0,%z4\\n\\
 
 	  emit_insn (gen_ashlsi3 (temp, op1, shift));
 	  emit_insn (gen_ashrsi3 (operands[0], temp, shift));
-	  DONE;
 	}
+      DONE;
     }
 }")
 
@@ -4993,26 +4991,6 @@ move\\t%0,%z4\\n\\
 ;; ??? There could be HImode variants for the ulh/ulhu/ush macros.
 ;; It isn't clear whether this will give better code.
 
-;; On the Allegrex the bit field patterns are selected as follows:
-;;
-;;   - extzv and insv on a register use the Allegrex 3.1 ext and ins
-;;     instructions (extzv_allegrex_insn and insv_allegrex_insn) when
-;;     -mext is given.
-;;
-;;   - extv, extzv and insv on a byte aligned 32-bit field in memory
-;;     use unaligned word accesses (lwl/lwr and swl/swr); extzv and
-;;     insv do this through extzv_ulw and insv_usw.
-;;
-;;   - -mno-ulsw, which the PSP specs pass unless -mulsw is given,
-;;     disables the unaligned accesses; the expanders then FAIL and
-;;     the generic shift and mask code is used.
-;;
-;; The memory forms of extzv and insv are separate expanders so that
-;; they can FAIL independently of the register forms.
-;;
-;; extv has no Allegrex instruction form.
-;;
-
 ;; Only specify the mode operand 1, the rest are assumed to be word_mode.
 (define_expand "extv"
   [(set (match_operand 0 "register_operand" "")
@@ -5074,23 +5052,34 @@ move\\t%0,%z4\\n\\
   "!TARGET_MIPS16"
   "
 {
+  /* On the Allegrex 3.1 with -mext, fields in registers use ext.
+     Fields in memory use unaligned word loads, which extzv_ulw
+     refuses under -mno-ulsw.  */
   if (TARGET_ALLEGREX31 && TARGET_EXT)
     {
       if (memory_operand (operands[1], QImode))
-	emit_insn (gen_extzv_ulw (operands[0], operands[1],
-				  operands[2], operands[3]));
+	{
+	  emit_insn (gen_extzv_ulw (operands[0], operands[1],
+				    operands[2], operands[3]));
+	  DONE;
+	}
       else if (register_operand (operands[1], SImode))
-	emit_insn (gen_extzv_allegrex_insn (operands[0], operands[1],
-					    operands[2], operands[3]));
+	{
+	  emit_insn (gen_extzv_allegrex_insn (operands[0], operands[1],
+					      operands[2], operands[3]));
+	  DONE;
+	}
       else
 	FAIL;
     }
   else if (memory_operand (operands[1], QImode))
-    emit_insn (gen_extzv_ulw (operands[0], operands[1],
-			      operands[2], operands[3]));
+    {
+      emit_insn (gen_extzv_ulw (operands[0], operands[1],
+				operands[2], operands[3]));
+      DONE;
+    }
   else
     FAIL;
-  DONE;
 }")
 
 (define_expand "extzv_ulw"
@@ -5153,23 +5142,34 @@ move\\t%0,%z4\\n\\
   "!TARGET_MIPS16"
   "
 {
+  /* On the Allegrex 3.1 with -mext, fields in registers use ins.
+     Fields in memory use unaligned word stores, which insv_usw
+     refuses under -mno-ulsw.  */
   if (TARGET_ALLEGREX31 && TARGET_EXT)
     {
       if (memory_operand (operands[0], QImode))
-	emit_insn (gen_insv_usw (operands[0], operands[1],
-				 operands[2], operands[3]));
+	{
+	  emit_insn (gen_insv_usw (operands[0], operands[1],
+				   operands[2], operands[3]));
+	  DONE;
+	}
       else if (register_operand (operands[0], SImode))
-	emit_insn (gen_insv_allegrex_insn (operands[0], operands[1],
-					   operands[2], operands[3]));
+	{
+	  emit_insn (gen_insv_allegrex_insn (operands[0], operands[1],
+					     operands[2], operands[3]));
+	  DONE;
+	}
       else
 	FAIL;
     }
   else if (memory_operand (operands[0], QImode))
-    emit_insn (gen_insv_usw (operands[0], operands[1],
-			     operands[2], operands[3]));
+    {
+      emit_insn (gen_insv_usw (operands[0], operands[1],
+			       operands[2], operands[3]));
+      DONE;
+    }
   else
     FAIL;
-  DONE;
 }")
 
 (define_expand "insv_usw"
@@ -7970,18 +7970,19 @@ move\\t%0,%z4\\n\\
   "ISA_HAS_ROTR_SI"
   "
 {
+  rtx amount;
+
   /* There is no rotate left instruction; rotate right instead.  */
   if (GET_CODE (operands[2]) == CONST_INT)
-    operands[2] = GEN_INT (32 - INTVAL (operands[2]));
+    amount = GEN_INT (32 - INTVAL (operands[2]));
   else
     {
-      rtx temp = gen_reg_rtx (SImode);
-
-      emit_insn (gen_negsi2 (temp, operands[2]));
-      operands[2] = temp;
+      /* Only the low five bits of the negated amount matter.  */
+      amount = gen_reg_rtx (SImode);
+      emit_insn (gen_negsi2 (amount, operands[2]));
     }
 
-  emit_insn (gen_rotrsi3 (operands[0], operands[1], operands[2]));
+  emit_insn (gen_rotrsi3 (operands[0], operands[1], amount));
   DONE;
 }")
 
@@ -7992,8 +7993,7 @@ move\\t%0,%z4\\n\\
   "ISA_HAS_ROTR_SI"
   "*
 {
-  if ((TARGET_SR71K || TARGET_ALLEGREX31)
-      && GET_CODE (operands[2]) != CONST_INT)
+  if ((TARGET_SR71K || TARGET_ALLEGREX31) && GET_CODE (operands[2]) != CONST_INT)
     return \"rorv\\t%0,%1,%2\";
 
   if ((GET_CODE (operands[2]) == CONST_INT)
@@ -10950,20 +10950,11 @@ ld\\t%2,%1-%S1(%2)\;daddu\\t%2,%2,$31\\n\\t%*j\\t%2"
 ;;			-mext), cache, sync, ctz and cto
 ;;
 ;; Most of these are also reachable through the __builtin_allegrex_*
-;; functions, see mips_expand_builtin in mips.c.
-;;
-;; The madd/msub patterns accumulate into LO and clobber HI and the
-;; HI/LO pair, so that the scheduler sees the dependence on the
-;; multiply unit.
-;;
-;; seb/seh are only used when optimizing; at -O0 extendhisi2 and
-;; extendqisi2 keep the shift sequences of the other MIPS targets.
-;;
-;; cache and sync are unspec_volatile so that they are never deleted
-;; or moved across other volatile operations.
-;;
-;; The ffs, ctz and cto expanders and the sminsi3/smaxsi3 expanders
-;; at the end of this section are built from the instructions above.
+;; functions, see mips_expand_builtin in mips.c.  The madd/msub
+;; patterns clobber HI and the HI/LO pair, so that the scheduler sees
+;; the dependence on the multiply unit.  The ffs, ctz, cto, sminsi3
+;; and smaxsi3 expanders at the end of this section are built from
+;; the instructions above.
 ;;
 
 ;; Multiply-accumulate into HI/LO.
@@ -11130,6 +11121,7 @@ ld\\t%2,%1-%S1(%2)\;daddu\\t%2,%2,$31\\n\\t%*j\\t%2"
   "TARGET_ALLEGREX31"
   "*
 {
+  /* ext rt,rs,pos,size: the field must lie within the register.  */
   if (GET_CODE (operands[2]) != CONST_INT || GET_CODE (operands[3]) != CONST_INT)
     abort ();
   if ((unsigned HOST_WIDE_INT) (INTVAL (operands[3]) - 1) > 31)
@@ -11152,6 +11144,8 @@ ld\\t%2,%1-%S1(%2)\;daddu\\t%2,%2,$31\\n\\t%*j\\t%2"
   "TARGET_ALLEGREX31 && TARGET_EXT"
   "*
 {
+  /* As extzv_allegrex; zero_extract has the size before the
+     position.  */
   if (GET_CODE (operands[2]) != CONST_INT || GET_CODE (operands[3]) != CONST_INT)
     abort ();
   if ((unsigned HOST_WIDE_INT) (INTVAL (operands[2]) - 1) > 31)
@@ -11177,6 +11171,8 @@ ld\\t%2,%1-%S1(%2)\;daddu\\t%2,%2,$31\\n\\t%*j\\t%2"
   "TARGET_ALLEGREX31"
   "*
 {
+  /* ins rt,rs,pos,size inserts the low SIZE bits of rs at POS.
+     Operand 1 is the value the field is inserted into.  */
   if (GET_CODE (operands[3]) != CONST_INT || GET_CODE (operands[4]) != CONST_INT)
     abort ();
   if ((unsigned HOST_WIDE_INT) (INTVAL (operands[4]) - 1) > 31)
@@ -11213,6 +11209,10 @@ ld\\t%2,%1-%S1(%2)\;daddu\\t%2,%2,$31\\n\\t%*j\\t%2"
   "TARGET_ALLEGREX31 && TARGET_EXT"
   "*
 {
+  /* As insv_allegrex, for a field of a register (the canonical
+     zero_extract form): operand 1 is the size, operand 2 the
+     position and operand 3 the value.  The register is updated
+     in place, so no copies are needed.  */
   if (GET_CODE (operands[1]) != CONST_INT || GET_CODE (operands[2]) != CONST_INT)
     abort ();
   if ((unsigned HOST_WIDE_INT) (INTVAL (operands[1]) - 1) > 31)
@@ -11236,6 +11236,7 @@ ld\\t%2,%1-%S1(%2)\;daddu\\t%2,%2,$31\\n\\t%*j\\t%2"
   "TARGET_ALLEGREX31"
   "*
 {
+  /* The cache operation is a five bit field of the instruction.  */
   if (GET_CODE (operands[0]) == CONST_INT
       && (unsigned HOST_WIDE_INT) INTVAL (operands[0]) > 31)
     abort ();
@@ -11301,7 +11302,6 @@ ld\\t%2,%1-%S1(%2)\;daddu\\t%2,%2,$31\\n\\t%*j\\t%2"
   rtx bit  = gen_reg_rtx (SImode);
   rtx clz  = gen_reg_rtx (SImode);
   rtx nclz = gen_reg_rtx (SImode);
-
   /* ffs (x) = 32 - clz (x & -x) */
   emit_insn (gen_negsi2 (neg, operands[1]));
   emit_insn (gen_andsi3 (bit, operands[1], neg));
