@@ -4201,7 +4201,8 @@ output_block_move (insn, operands, num_regs, move_type)
 
       else if (bytes >= 4
 	       && ! TARGET_SR71K
-	       && ! TARGET_MIPS16)
+	       && ! TARGET_MIPS16
+	       && ! TARGET_NO_ULSW)
 	{
 	  if (BYTES_BIG_ENDIAN)
 	    {

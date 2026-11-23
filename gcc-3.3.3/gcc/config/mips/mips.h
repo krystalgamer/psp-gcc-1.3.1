@@ -3598,6 +3598,8 @@ typedef struct mips_args {
 	    return COSTS_N_INSNS (2);					\
 	  else if (TUNE_MIPS6000)       				\
 	    return COSTS_N_INSNS (3);					\
+	  else if (TUNE_ALLEGREX)					\
+	    return COSTS_N_INSNS (4);					\
 	  else								\
 	    return COSTS_N_INSNS (6);					\
 	}								\
@@ -3621,7 +3623,8 @@ typedef struct mips_args {
 	{								\
 	  if (TUNE_MIPS3000						\
 	      || TUNE_MIPS3900						\
-	      || TUNE_MIPS5000)						\
+	      || TUNE_MIPS5000						\
+	      || TUNE_ALLEGREX)						\
 	    return COSTS_N_INSNS (4);					\
 	  else if (TUNE_MIPS6000                                        \
 		   || TUNE_MIPS5400                                     \
@@ -3655,6 +3658,10 @@ typedef struct mips_args {
 	return COSTS_N_INSNS (17);					\
       else if (TUNE_MIPS5000)						\
 	return COSTS_N_INSNS (5);					\
+      else if (TUNE_ALLEGREX2)						\
+	return COSTS_N_INSNS (4);					\
+      else if (TUNE_ALLEGREX3 || TUNE_ALLEGREX31)			\
+	return COSTS_N_INSNS (5);					\
       else								\
 	return COSTS_N_INSNS (10);					\
     }									\
@@ -3672,6 +3679,10 @@ typedef struct mips_args {
 	    return COSTS_N_INSNS (15);					\
          else if (TUNE_MIPS5400 || TUNE_MIPS5500)                       \
             return COSTS_N_INSNS (30);                                  \
+	  else if (TUNE_ALLEGREX2)					\
+	    return COSTS_N_INSNS (31);					\
+	  else if (TUNE_ALLEGREX3 || TUNE_ALLEGREX31)			\
+	    return COSTS_N_INSNS (16);					\
 	  else								\
 	    return COSTS_N_INSNS (23);					\
 	}								\
@@ -3694,11 +3705,14 @@ typedef struct mips_args {
   case UDIV:								\
   case UMOD:								\
     if (TUNE_MIPS3000							\
-        || TUNE_MIPS3900)						\
+        || TUNE_MIPS3900						\
+	|| TUNE_ALLEGREX2)						\
       return COSTS_N_INSNS (35);					\
     else if (TUNE_MIPS6000)						\
       return COSTS_N_INSNS (38);					\
-    else if (TUNE_MIPS5000)						\
+    else if (TUNE_MIPS5000						\
+	     || TUNE_ALLEGREX3						\
+	     || TUNE_ALLEGREX31)					\
       return COSTS_N_INSNS (36);					\
     else if (TUNE_MIPS5400 || TUNE_MIPS5500)                            \
       return COSTS_N_INSNS ((GET_MODE (X) == SImode) ? 42 : 74);        \

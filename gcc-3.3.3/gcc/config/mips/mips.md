@@ -5001,6 +5001,9 @@ move\\t%0,%z4\\n\\
   "!TARGET_MIPS16"
   "
 {
+  if (TARGET_NO_ULSW)
+    FAIL;
+
   /* If the field does not start on a byte boundary, then fail.  */
   if (INTVAL (operands[3]) % 8 != 0)
     FAIL;
@@ -11533,6 +11536,10 @@ ld\\t%2,%1-%S1(%2)\;daddu\\t%2,%2,$31\\n\\t%*j\\t%2"
   "ISA_HAS_CONDMOVE || ISA_HAS_INT_CONDMOVE"
   "
 {
+  /* The Allegrex only has integer conditional moves.  */
+  if (TARGET_ALLEGREX31 && GET_MODE (branch_cmp[0]) != SImode)
+    FAIL;
+
   gen_conditional_move (operands);
   DONE;
 }")
