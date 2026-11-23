@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gcc 3.0\n"
 "POT-Creation-Date: 2003-10-24 13:20+0200\n"
-"PO-Revision-Date: 2001-12-05 22:47+0900\n"
+"PO-Revision-Date: 2004-07-13 12:17+0900\n"
 "Last-Translator: Daisuke Yamashita <yamad@mb.infoweb.ne.jp>\n"
 "Language-Team: Japanese <ja@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -199,11 +199,11 @@ msgstr "式の整数がオーバーフローしました"
 #. This detects cases like converting -129 or 256 to unsigned char.
 #: c-common.c:1402
 msgid "large integer implicitly truncated to unsigned type"
-msgstr "大きな整数が暗黙に符合無し型に切り詰められました"
+msgstr "大きな整数が暗黙に符号無し型に切り詰められました"
 
 #: c-common.c:1404
 msgid "negative integer implicitly converted to unsigned type"
-msgstr "負の整数が暗黙に符合無し型に変換されました"
+msgstr "負の整数が暗黙に符号無し型に変換されました"
 
 #: c-common.c:1452
 msgid "overflow in implicit constant conversion"
@@ -241,11 +241,11 @@ msgstr "データ型の範囲制限によって、比較が常に true となります"
 
 #: c-common.c:2585
 msgid "comparison of unsigned expression >= 0 is always true"
-msgstr "符合無しの式 >= 0 という比較は常に true です"
+msgstr "符号無しの式 >= 0 という比較は常に true です"
 
 #: c-common.c:2594
 msgid "comparison of unsigned expression < 0 is always false"
-msgstr "符合無しの式 < 0 という比較は常に false です"
+msgstr "符号無しの式 < 0 という比較は常に false です"
 
 #: c-common.c:2641
 msgid "pointer of type `void *' used in arithmetic"
@@ -1920,7 +1920,7 @@ msgstr "フォーマット中で %s を繰り返しています"
 
 #: c-format.c:1648
 msgid "missing fill character at end of strfmon format"
-msgstr "strfmon フォーマットの終りで詰め文字を欠いています"
+msgstr "strfmon フォーマットの終わりで詰め文字を欠いています"
 
 #: c-format.c:1687 c-format.c:1786 c-format.c:2066 c-format.c:2119
 msgid "too few arguments for format"
@@ -1952,7 +1952,7 @@ msgstr "%s は `%s' %s 長さ修飾子を受け付けません"
 
 #: c-format.c:1906
 msgid "conversion lacks type at end of format"
-msgstr "フォーマットの終りで型変換文字が欠けています"
+msgstr "フォーマットの終わりで型変換文字が欠けています"
 
 #: c-format.c:1917
 #, c-format
@@ -2268,8 +2268,8 @@ msgstr ""
 "  -include <file>           他のファイルの前に <file> の内容を含める\n"
 "  -imacros <file>           <file> のマクロ定義を受け入れる\n"
 "  -iprefix <path>           次の二つのオプション用プレフィクスに <path> を指定\n"
-"  -iwithprefix <dir>        <dir> をシステム include パスの終りに追加する\n"
-"  -iwithprefixbefore <dir>  <dir> をメイン include パスの終りに追加する\n"
+"  -iwithprefix <dir>        <dir> をシステム include パスの終わりに追加する\n"
+"  -iwithprefixbefore <dir>  <dir> をメイン include パスの終わりに追加する\n"
 "  -isystem <dir>            <dir> をシステム include パスの最初に追加する\n"
 
 #: c-opts.c:1735
@@ -2282,8 +2282,8 @@ msgid ""
 "  -nostdinc++               Do not search system include directories for C++\n"
 "  -o <file>                 Put output into <file>\n"
 msgstr ""
-"  -idirafter <dir>          <dir> をシステム include パスの終りに追加する\n"
-"  -I <dir>                  <dir> をメイン include パスの終りに追加する\n"
+"  -idirafter <dir>          <dir> をシステム include パスの終わりに追加する\n"
+"  -I <dir>                  <dir> をメイン include パスの終わりに追加する\n"
 "  -I-                       きめ細かな include パス制御 -- info 文書を参照\n"
 "  -nostdinc                 システム include ディレクトリを探索しない\n"
 "                             (-system で指定されたディレクトリは探索される)\n"
@@ -2534,7 +2534,7 @@ msgstr "ISO C はメンバのないメンバ宣言を禁じます"
 
 #: c-parse.y:1913 objc-parse.y:1984
 msgid "deprecated use of label at end of compound statement"
-msgstr "複合文の終りでラベルを使うことは推奨されません"
+msgstr "複合文の終わりでラベルを使うことは推奨されません"
 
 #: c-parse.y:1930 objc-parse.y:2001
 msgid "ISO C89 forbids mixed declarations and code"
@@ -2925,12 +2925,12 @@ msgstr "%s はプロトタイプでの型の幅とは異なっています"
 #: c-typeck.c:1715
 #, c-format
 msgid "%s as unsigned due to prototype"
-msgstr "プロトタイプにより %s は符合なしとされています"
+msgstr "プロトタイプによれば %s は符号なしとされています"
 
 #: c-typeck.c:1717
 #, c-format
 msgid "%s as signed due to prototype"
-msgstr "プロトタイプにより %s は符合付きとされています"
+msgstr "プロトタイプによれば %s は符号付きとされています"
 
 #: c-typeck.c:1751 cp/typeck.c:2933
 msgid "too few arguments to function"
@@ -3035,15 +3035,15 @@ msgstr "非浮動小数点引数での順序付けられない比較です"
 
 #: c-typeck.c:2505
 msgid "comparison between signed and unsigned"
-msgstr "符合付きと符合無しとの比較です"
+msgstr "符号付きと符号無しとの比較です"
 
 #: c-typeck.c:2551 cp/typeck.c:3633
 msgid "comparison of promoted ~unsigned with constant"
-msgstr "~で反転された格上げ符合無し型と定数との比較です"
+msgstr "~で反転された格上げ符号無し型と定数との比較です"
 
 #: c-typeck.c:2559 cp/typeck.c:3641
 msgid "comparison of promoted ~unsigned with unsigned"
-msgstr "~で反転された符合無し型と符合無し型との比較です"
+msgstr "~で反転された符号無し型と符号無し型との比較です"
 
 #: c-typeck.c:2639
 msgid "pointer of type `void *' used in subtraction"
@@ -3184,7 +3184,7 @@ msgstr "register 変数 `%s' のアドレスが要求されました"
 
 #: c-typeck.c:3453
 msgid "signed and unsigned type in conditional expression"
-msgstr "条件式に符合付き型と符合無し型とがあります"
+msgstr "条件式に符号付き型と符号無し型とがあります"
 
 #: c-typeck.c:3460
 msgid "ISO C forbids conditional expr with only one void side"
@@ -4533,7 +4533,7 @@ msgstr "バックスラッシュと改行が空白で分割されました"
 
 #: cpplex.c:221 cpptrad.c:158
 msgid "backslash-newline at end of file"
-msgstr "ファイルの終りにバックスラッシュ-改行があります"
+msgstr "ファイルの終わりにバックスラッシュ-改行があります"
 
 #: cpplex.c:287 cpptrad.c:199
 msgid "\"/*\" within comment"
@@ -4683,7 +4683,7 @@ msgstr "複数文字からなる文字定数"
 #: cpplib.c:225
 #, c-format
 msgid "extra tokens at end of #%s directive"
-msgstr "余分なトークンが #%s ディレクティブの終りにあります"
+msgstr "余分なトークンが #%s ディレクティブの終わりにあります"
 
 #: cpplib.c:315
 #, c-format
@@ -5274,7 +5274,7 @@ msgstr "`noreturn' 関数が return しています"
 
 #: flow.c:378
 msgid "control reaches end of non-void function"
-msgstr "制御が非 void 関数の終りに到達しました"
+msgstr "制御が非 void 関数の終わりに到達しました"
 
 #: flow.c:1642
 msgid "Attempt to delete prologue/epilogue insn:"
@@ -7668,11 +7668,11 @@ msgstr "ビットフィールドをデフォルトで符合無しとする"
 
 #: toplev.c:1217
 msgid "Make 'char' be signed by default"
-msgstr "'char' をデフォルトで符合付きとする"
+msgstr "'char' をデフォルトで符号付きとする"
 
 #: toplev.c:1219
 msgid "Make 'char' be unsigned by default"
-msgstr "'char' をデフォルトで符合無しとする"
+msgstr "'char' をデフォルトで符号無しとする"
 
 #: toplev.c:1225
 #, fuzzy
@@ -7833,7 +7833,7 @@ msgstr "副作用完了点規則を破る可能性がある場合に警告する"
 
 #: toplev.c:1346
 msgid "Warn about signed/unsigned comparisons"
-msgstr "符合付き/符合無しの比較に関して警告する"
+msgstr "符号付き/符号無しの比較に関して警告する"
 
 #: toplev.c:1349
 msgid "Warn about non-prototyped function decls"
@@ -9581,7 +9581,7 @@ msgstr "符合無しの RPTB/DB 用の反復カウントを許容する"
 
 #: config/c4x/c4x.h:242
 msgid "Disallow unsigned iteration counts for RPTB/DB"
-msgstr "符合無しの RPTB/DB 用の反復カウントを許容しない"
+msgstr "符号無しの RPTB/DB 用の反復カウントを許容しない"
 
 #: config/c4x/c4x.h:244
 msgid "Preserve all 40 bits of FP reg across call"
@@ -10423,7 +10423,7 @@ msgstr "H8/300 アラインメント規則を使用する"
 
 #: config/i370/i370-c.c:53
 msgid "junk at end of #pragma map"
-msgstr "#pragma map の終りにゴミがあります"
+msgstr "#pragma map の終わりにゴミがあります"
 
 #: config/i370/i370-c.c:59
 msgid "malformed #pragma map, ignored"
@@ -13718,7 +13718,7 @@ msgstr "interrupt 属性を設定できません: その様な識別子がありません"
 
 #: config/v850/v850-c.c:148
 msgid "junk at end of #pragma ghs section"
-msgstr "#pragma ghs section の終りにゴミがあります"
+msgstr "#pragma ghs section の終わりにゴミがあります"
 
 #: config/v850/v850-c.c:165
 #, fuzzy, c-format
@@ -13731,31 +13731,31 @@ msgstr "おかしな #pragma ghs section"
 
 #: config/v850/v850-c.c:200
 msgid "junk at end of #pragma ghs interrupt"
-msgstr "#pragma ghs interrupt の終りにゴミがあります"
+msgstr "#pragma ghs interrupt の終わりにゴミがあります"
 
 #: config/v850/v850-c.c:212
 msgid "junk at end of #pragma ghs starttda"
-msgstr "#pragma ghs starttda の終りにゴミがあります"
+msgstr "#pragma ghs starttda の終わりにゴミがあります"
 
 #: config/v850/v850-c.c:224
 msgid "junk at end of #pragma ghs startsda"
-msgstr "#pragma ghs startsda の終りにゴミがあります"
+msgstr "#pragma ghs startsda の終わりにゴミがあります"
 
 #: config/v850/v850-c.c:236
 msgid "junk at end of #pragma ghs startzda"
-msgstr "#pragma ghs startzda の終りにゴミがあります"
+msgstr "#pragma ghs startzda の終わりにゴミがあります"
 
 #: config/v850/v850-c.c:248
 msgid "junk at end of #pragma ghs endtda"
-msgstr "#pragma ghs endtda の終りにゴミがあります"
+msgstr "#pragma ghs endtda の終わりにゴミがあります"
 
 #: config/v850/v850-c.c:260
 msgid "junk at end of #pragma ghs endsda"
-msgstr "#pragma ghs endsda の終りにゴミがあります"
+msgstr "#pragma ghs endsda の終わりにゴミがあります"
 
 #: config/v850/v850-c.c:272
 msgid "junk at end of #pragma ghs endzda"
-msgstr "#pragma ghs の終りにゴミがあります"
+msgstr "#pragma ghs の終わりにゴミがあります"
 
 #: config/v850/v850.c:129
 #, fuzzy, c-format
@@ -15733,7 +15733,7 @@ msgstr ""
 #: cp/decl.c:11032
 #, c-format
 msgid "short, signed or unsigned invalid for `%s'"
-msgstr "short, 符合つきまたは符合なしは `%s' にとって無効です"
+msgstr "short, 符号つきまたは符号なしは `%s' にとって無効です"
 
 #: cp/decl.c:11037
 #, c-format
@@ -15743,7 +15743,7 @@ msgstr "long と short が `%s' に対して一緒に指定されています"
 #: cp/decl.c:11048
 #, c-format
 msgid "signed and unsigned given together for `%s'"
-msgstr "符合付きと符合無しが `%s' に対して一緒に与えられています"
+msgstr "符号付きと符号無しが `%s' に対して一緒に与えられています"
 
 #: cp/decl.c:11157
 #, fuzzy
@@ -18335,7 +18335,7 @@ msgstr "ポインタと整数との比較を行なっています"
 
 #: cp/typeck.c:3589
 msgid "comparison between signed and unsigned integer expressions"
-msgstr "符合付きと符合無しの整数式同士の比較です"
+msgstr "符号付きと符号無しの整数式同士の比較です"
 
 #: cp/typeck.c:3654
 #, fuzzy
@@ -18998,7 +18998,7 @@ msgstr "Effective C++ 式の指針からはずれるものについて警告する"
 
 #: cp/lang-options.h:149
 msgid "Warn when overload promotes from unsigned to signed"
-msgstr "オーバーロードが符合無しから符合付きに格上げとなる場合に警告する"
+msgstr "オーバーロードが符号無しから符号付きに格上げとなる場合に警告する"
 
 #: cp/lang-options.h:152
 msgid "Warn if a C style cast is used in a program"
@@ -21194,7 +21194,7 @@ msgstr "登録されていない演算子 %s です"
 
 #: java/typeck.c:553
 msgid "junk at end of signature string"
-msgstr "シグネイチャ文字列の終りにゴミがあります"
+msgstr "シグネイチャ文字列の終わりにゴミがあります"
 
 #: java/verify.c:479
 msgid "bad pc in exception_table"
