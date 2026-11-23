@@ -11261,7 +11261,7 @@ mips_init_builtins ()
     = build_function_type (float_type_node,
 			   tree_cons (NULL_TREE, float_type_node, endlink));
 
-  for (i = 0, d = bdesc; i < ARRAY_SIZE (bdesc); i++, d++)
+  for (d = bdesc, i = 0; i < ARRAY_SIZE (bdesc); i++, d++)
     {
       switch (d->code)
 	{
@@ -11379,25 +11379,12 @@ mips_expand_builtin (exp, target, subtarget, mode, ignore)
   tree arglist = TREE_OPERAND (exp, 1);
   unsigned int fcode = DECL_FUNCTION_CODE (fndecl);
 
-  for (i = 0, d = bdesc; i < ARRAY_SIZE (bdesc); i++, d++)
+  for (d = bdesc, i = 0; i < ARRAY_SIZE (bdesc); i++, d++)
     if (d->code == fcode)
       switch (d->code)
 	{
-	case MIPS_BUILTIN_CLZ:
-	case MIPS_BUILTIN_CLO:
-	case MIPS_BUILTIN_CTZ:
-	case MIPS_BUILTIN_CTO:
-	case MIPS_BUILTIN_SEB:
-	case MIPS_BUILTIN_SEH:
-	case MIPS_BUILTIN_WSBW:
-	case MIPS_BUILTIN_WSBH:
-	case MIPS_BUILTIN_BITREV:
-	case MIPS_BUILTIN_CEIL_W_S:
-	case MIPS_BUILTIN_FLOOR_W_S:
-	case MIPS_BUILTIN_ROUND_W_S:
-	case MIPS_BUILTIN_TRUNC_W_S:
-	case MIPS_BUILTIN_SQRT_S:
-	  return mips_expand_1op_builtin (d->icode, arglist, target);
+	case MIPS_BUILTIN_SYNC:
+	  return mips_expand_v0op_builtin (d->icode, arglist, target);
 
 	case MIPS_BUILTIN_MAX:
 	case MIPS_BUILTIN_MIN:
@@ -11414,8 +11401,21 @@ mips_expand_builtin (exp, target, subtarget, mode, ignore)
 	case MIPS_BUILTIN_CACHE:
 	  return mips_expand_v2op_builtin (d->icode, arglist, target);
 
-	case MIPS_BUILTIN_SYNC:
-	  return mips_expand_v0op_builtin (d->icode, arglist, target);
+	case MIPS_BUILTIN_CLZ:
+	case MIPS_BUILTIN_CLO:
+	case MIPS_BUILTIN_CTZ:
+	case MIPS_BUILTIN_CTO:
+	case MIPS_BUILTIN_SEB:
+	case MIPS_BUILTIN_SEH:
+	case MIPS_BUILTIN_WSBW:
+	case MIPS_BUILTIN_WSBH:
+	case MIPS_BUILTIN_BITREV:
+	case MIPS_BUILTIN_CEIL_W_S:
+	case MIPS_BUILTIN_FLOOR_W_S:
+	case MIPS_BUILTIN_ROUND_W_S:
+	case MIPS_BUILTIN_TRUNC_W_S:
+	case MIPS_BUILTIN_SQRT_S:
+	  return mips_expand_1op_builtin (d->icode, arglist, target);
 
 	default:
 	  if (! DECL_ASSEMBLER_NAME_SET_P (fndecl))
