@@ -333,7 +333,7 @@ namespace std
     class __default_alloc_template
     {
     private:
-      enum {_ALIGN = 8};
+      enum {_ALIGN = 16};
       enum {_MAX_BYTES = 128};
       enum {_NFREELISTS = _MAX_BYTES / _ALIGN};
 
