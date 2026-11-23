@@ -59,3 +59,38 @@ Boston, MA 02111-1307, USA.  */
 /* Allow objects (e.g. VFPU vectors) to be aligned to 16 bytes.  */
 #undef BIGGEST_ALIGNMENT
 #define BIGGEST_ALIGNMENT 128
+
+/* Identify the compiler in the assembler output.  */
+#undef IDENT_ASM_OP
+#define IDENT_ASM_OP "\t.ident\t"
+
+/* Output common and local symbols with their alignment, ELF style.  */
+#undef ASM_OUTPUT_ALIGNED_DECL_COMMON
+#undef ASM_OUTPUT_LOCAL
+
+#undef COMMON_ASM_OP
+#define COMMON_ASM_OP	"\t.comm\t"
+
+#undef  ASM_OUTPUT_ALIGNED_COMMON
+#define ASM_OUTPUT_ALIGNED_COMMON(FILE, NAME, SIZE, ALIGN)		\
+  do									\
+    {									\
+      fprintf ((FILE), "%s", COMMON_ASM_OP);				\
+      assemble_name ((FILE), (NAME));					\
+      fprintf ((FILE), ",%u,%u\n", (SIZE), (ALIGN) / BITS_PER_UNIT);	\
+    }									\
+  while (0)
+
+#undef LOCAL_ASM_OP
+#define LOCAL_ASM_OP	"\t.local\t"
+
+#undef  ASM_OUTPUT_ALIGNED_LOCAL
+#define ASM_OUTPUT_ALIGNED_LOCAL(FILE, NAME, SIZE, ALIGN)	\
+  do								\
+    {								\
+      fprintf ((FILE), "%s", LOCAL_ASM_OP);			\
+      assemble_name ((FILE), (NAME));				\
+      fprintf ((FILE), "\n");					\
+      ASM_OUTPUT_ALIGNED_COMMON (FILE, NAME, SIZE, ALIGN);	\
+    }								\
+  while (0)
