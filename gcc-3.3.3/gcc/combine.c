@@ -6275,9 +6275,7 @@ make_extraction (mode, inner, pos, pos_rtx, len,
 
   /* Unless this is a COMPARE or we have a funny memory reference,
      don't do anything with zero-extending field extracts starting at
-     the low-order bit since they are simple AND operations.  Wider
-     fields are kept as extractions; their masks do not fit in an
-     immediate operand.  */
+     the low-order bit since they are simple AND operations.  */
   if (pos_rtx == 0 && pos == 0 && ! in_dest && len < 16
       && ! in_compare && ! spans_byte && unsignedp)
     return 0;
@@ -6670,14 +6668,25 @@ make_compound_operation (x, in_code)
 							next_code),
 			       0, NULL_RTX, i, 1, 0, in_code == COMPARE);
 
-      /* If we are in a comparison and this is an AND with a power of two,
-	 convert this into the appropriate bit extract.  */
-      else if (in_code == COMPARE
-	       && (i = exact_log2 (INTVAL (XEXP (x, 1)))) >= 0)
-	new = make_extraction (mode,
-			       make_compound_operation (XEXP (x, 0),
-							next_code),
-			       i, NULL_RTX, 1, 1, 0, 1);
+      /* In a comparison, an AND with a contiguous field is a bit extract.  */
+      else if (in_code == COMPARE)
+	{
+	  int pos;
+	  HOST_WIDE_INT field;
+	  for (pos = 1; pos < 32; pos++)
+	    {
+	      field = INTVAL (XEXP (x, 1)) >> pos;
+	      if ((field << pos) == INTVAL (XEXP (x, 1))
+		  && (i = exact_log2 (field + 1)) >= 0)
+		{
+		  new = make_extraction (mode,
+					 make_compound_operation (XEXP (x, 0),
+								  next_code),
+					 pos, NULL_RTX, i, 1, 0, 1);
+		  break;
+		}
+	    }
+	}
 
       break;
 
