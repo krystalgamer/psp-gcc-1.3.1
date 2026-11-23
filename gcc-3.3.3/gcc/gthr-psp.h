@@ -1,0 +1,390 @@
+/* Threads compatibility routines for libgcc2 and libobjc for PSP.  */
+/* Compile this one with gcc.  */
+/* Copyright (C) 2004 Sony Computer Entertainment Inc.
+
+This file is part of GCC.
+
+GCC is free software; you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free
+Software Foundation; either version 2, or (at your option) any later
+version.
+
+GCC is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+for more details.
+
+You should have received a copy of the GNU General Public License
+along with GCC; see the file COPYING.  If not, write to the Free
+Software Foundation, 59 Temple Place - Suite 330, Boston, MA
+02111-1307, USA.  */
+
+/* As a special exception, if you link this library with other files,
+   some of which are compiled with GCC, to produce an executable,
+   this library does not by itself cause the resulting executable
+   to be covered by the GNU General Public License.
+   This exception does not however invalidate any other reasons why
+   the executable file might be covered by the GNU General Public License.  */
+
+#ifndef GCC_GTHR_PSP_H
+#define GCC_GTHR_PSP_H
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#if defined(_IN_GCC_LIB)
+/* Minimal kernel stuff to bootstrap compiler */
+
+#define SCE_KERNEL_SA_THPRI 0x0100U 
+
+extern int sceKernelCpuSuspendIntr (void);
+extern int sceKernelCpuResumeIntr (int oldstat);
+extern int sceKernelGetThreadId(void);
+extern int sceKernelCreateSema(const char *s, int flg, int val, int max,
+			       const void *p);
+extern int sceKernelDeleteSema(int id);
+extern int sceKernelWaitSema(int id, int count, void *p);
+extern int sceKernelPollSema (int id, int count);
+extern int sceKernelSignalSema (int id, int count);
+#else
+#include <kernel.h>
+#endif
+
+#ifdef __cplusplus
+}
+#endif
+
+#ifdef _LIBOBJC
+
+/* Thread local storage for a single thread */
+static void *thread_local_storage = NULL;
+
+/* Backend initialization functions */
+
+/* Initialize the threads subsystem.  */
+static inline int
+__gthread_objc_init_thread_system (void)
+{
+  /* No thread support available */
+  return -1;
+}
+
+/* Close the threads subsystem.  */
+static inline int
+__gthread_objc_close_thread_system (void)
+{
+  /* No thread support available */
+  return -1;
+}
+
+/* Backend thread functions */
+
+/* Create a new thread of execution.  */
+static inline objc_thread_t
+__gthread_objc_thread_detach (void (*func)(void *), void *arg)
+{
+  /* No thread support available */
+  return NULL;
+}
+
+/* Set the current thread's priority.  */
+static inline int
+__gthread_objc_thread_set_priority (int priority)
+{
+  /* No thread support available */
+  return -1;
+}
+
+/* Return the current thread's priority.  */
+static inline int
+__gthread_objc_thread_get_priority (void)
+{
+  return OBJC_THREAD_INTERACTIVE_PRIORITY;
+}
+
+/* Yield our process time to another thread.  */
+static inline void
+__gthread_objc_thread_yield (void)
+{
+  return;
+}
+
+/* Terminate the current thread.  */
+static inline int
+__gthread_objc_thread_exit (void)
+{
+  /* No thread support available */
+  /* Should we really exit the program */
+  /* exit (&__objc_thread_exit_status); */
+  return -1;
+}
+
+/* Returns an integer value which uniquely describes a thread.  */
+static inline objc_thread_t
+__gthread_objc_thread_id (void)
+{
+  /* No thread support, use 1.  */
+  return (objc_thread_t) 1;
+}
+
+/* Sets the thread's local storage pointer.  */
+static inline int
+__gthread_objc_thread_set_data (void *value)
+{
+  thread_local_storage = value;
+  return 0;
+}
+
+/* Returns the thread's local storage pointer.  */
+static inline void *
+__gthread_objc_thread_get_data (void)
+{
+  return thread_local_storage;
+}
+
+/* Backend mutex functions */
+
+/* Allocate a mutex.  */
+static inline int
+__gthread_objc_mutex_allocate (objc_mutex_t mutex)
+{
+  return 0;
+}
+
+/* Deallocate a mutex.  */
+static inline int
+__gthread_objc_mutex_deallocate (objc_mutex_t mutex)
+{
+  return 0;
+}
+
+/* Grab a lock on a mutex.  */
+static inline int
+__gthread_objc_mutex_lock (objc_mutex_t mutex)
+{
+  /* There can only be one thread, so we always get the lock */
+  return 0;
+}
+
+/* Try to grab a lock on a mutex.  */
+static inline int
+__gthread_objc_mutex_trylock (objc_mutex_t mutex)
+{
+  /* There can only be one thread, so we always get the lock */
+  return 0;
+}
+
+/* Unlock the mutex */
+static inline int
+__gthread_objc_mutex_unlock (objc_mutex_t mutex)
+{
+  return 0;
+}
+
+/* Backend condition mutex functions */
+
+/* Allocate a condition.  */
+static inline int
+__gthread_objc_condition_allocate (objc_condition_t condition)
+{
+  return 0;
+}
+
+/* Deallocate a condition.  */
+static inline int
+__gthread_objc_condition_deallocate (objc_condition_t condition)
+{
+  return 0;
+}
+
+/* Wait on the condition */
+static inline int
+__gthread_objc_condition_wait (objc_condition_t condition,
+			       objc_mutex_t mutex)
+{
+  return 0;
+}
+
+/* Wake up all threads waiting on this condition.  */
+static inline int
+__gthread_objc_condition_broadcast (objc_condition_t condition)
+{
+  return 0;
+}
+
+/* Wake up one thread waiting on this condition.  */
+static inline int
+__gthread_objc_condition_signal (objc_condition_t condition)
+{
+  return 0;
+}
+
+#else /* _LIBOBJC */
+
+/* Just provide compatibility for mutex handling.  */
+
+#define __GTHREADS 1
+
+typedef int __gthread_key_t;
+typedef char __gthread_once_t;
+typedef struct __gthread_mutex
+{
+  int semid;
+  int owner;
+  int count;
+  int res;
+} __gthread_mutex_t;
+
+#define __GTHREAD_ONCE_INIT 0
+#define __GTHREAD_MUTEX_INIT { -1, -1, 0, 0}
+
+static inline int
+__gthread_once (__gthread_once_t *once, void (*func) (void))
+{
+  (*func)();
+  return 0;
+}
+
+static inline int
+__gthread_key_create (__gthread_key_t *key, void (*dtor) (void *))
+{
+  return -1;
+}
+
+static inline int
+__gthread_key_dtor (__gthread_key_t key, void *ptr)
+{
+  return -1;
+}
+
+static inline int
+__gthread_key_delete (__gthread_key_t key)
+{
+  return -1;
+}
+
+static inline void *
+__gthread_getspecific (__gthread_key_t key)
+{
+  return 0;
+}
+
+static inline int
+__gthread_setspecific (__gthread_key_t key, const void *ptr)
+{
+  return -1;
+}
+
+static inline int
+__gthread_mutex_lock (__gthread_mutex_t *mutex)
+{
+  int stat;
+  int myid;
+  int own;
+  int rtn;
+
+  if (mutex->semid < 0)
+    {
+      mutex->semid = sceKernelCreateSema ("gccGthrMutex",
+					  SCE_KERNEL_SA_THPRI,
+					  1, 1, 0);
+    }
+
+  myid = sceKernelGetThreadId ();
+  stat = sceKernelCpuSuspendIntr ();
+  if (mutex->owner < 0)
+    {
+      mutex->owner = myid;
+      own = 1;
+    }
+  else
+    own = 0;
+  sceKernelCpuResumeIntr (stat);
+
+  if (own || mutex->owner != myid)
+    {
+      rtn = sceKernelWaitSema (mutex->semid, 1, 0);
+    }
+  else
+    {
+      mutex->count++;
+      rtn = 0;
+    }
+    
+  return rtn;
+}
+
+static inline int
+__gthread_mutex_trylock (__gthread_mutex_t *mutex)
+{
+  int stat;
+  int myid;
+  int own;
+  int rtn;
+
+  if (mutex->semid < 0)
+    {
+      mutex->semid = sceKernelCreateSema ("gccGthrMutex",
+					  SCE_KERNEL_SA_THPRI,
+					  1, 1, 0);
+    }
+
+  myid = sceKernelGetThreadId ();
+  stat = sceKernelCpuSuspendIntr ();
+  if (mutex->owner < 0)
+    {
+      mutex->owner = myid;
+      own = 1;
+    }
+  else
+    own = 0;
+  sceKernelCpuResumeIntr (stat);
+
+  if (own || mutex->owner != myid)
+    {
+      rtn = sceKernelPollSema (mutex->semid, 1);
+    }
+  else
+    {
+      mutex->count++;
+      rtn = 0;
+    }
+    
+  return rtn;
+}
+
+static inline int
+__gthread_mutex_unlock (__gthread_mutex_t *mutex)
+{
+  int myid;
+  int rtn;
+
+  myid = sceKernelGetThreadId ();
+  if (mutex->owner == myid)
+    {
+      if (mutex->count > 0 && --mutex->count == 0)
+	{
+	  rtn = sceKernelSignalSema (mutex->semid, 1);
+	  mutex->owner = -1;
+	  sceKernelDeleteSema (mutex->semid);
+	  mutex->semid = -1;
+	}
+    }
+  else if (mutex->owner >= 0)
+    {
+      rtn = sceKernelSignalSema (mutex->semid, 1);
+      mutex->owner = -1;
+      sceKernelDeleteSema (mutex->semid);
+      mutex->semid = -1;
+      mutex->count = 0;
+    }
+  else
+    rtn = -1;
+
+  return rtn;
+}
+
+#endif /* _LIBOBJC */
+
+#endif /* ! GCC_GTHR_SINGLE_H */
