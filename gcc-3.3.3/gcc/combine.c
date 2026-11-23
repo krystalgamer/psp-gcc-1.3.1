@@ -6275,8 +6275,10 @@ make_extraction (mode, inner, pos, pos_rtx, len,
 
   /* Unless this is a COMPARE or we have a funny memory reference,
      don't do anything with zero-extending field extracts starting at
-     the low-order bit since they are simple AND operations.  */
-  if (pos_rtx == 0 && pos == 0 && ! in_dest
+     the low-order bit since they are simple AND operations.  Wider
+     fields are kept as extractions; their masks do not fit in an
+     immediate operand.  */
+  if (pos_rtx == 0 && pos == 0 && ! in_dest && len < 16
       && ! in_compare && ! spans_byte && unsignedp)
     return 0;
 
