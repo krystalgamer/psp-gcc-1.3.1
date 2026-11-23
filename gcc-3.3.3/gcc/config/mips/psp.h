@@ -95,6 +95,14 @@ Boston, MA 02111-1307, USA.  */
     }								\
   while (0)
 
+/* The startup code does not use $gp, so .init and .fini just call
+   the static functions.  */
+#undef CRT_CALL_STATIC_FUNCTION
+#define CRT_CALL_STATIC_FUNCTION(SECTION_OP, FUNC)	\
+   asm (SECTION_OP "\n\
+	jal " USER_LABEL_PREFIX #FUNC "\n\
+	" TEXT_SECTION_ASM_OP);
+
 /* Location of the PSP SDK ("devkit").  The driver searches its include,
    bin and lib directories and reads the SDK specs file from its lib
    directory; the environment variable overrides the default location.  */
