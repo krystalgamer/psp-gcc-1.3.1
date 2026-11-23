@@ -52,10 +52,6 @@ Boston, MA 02111-1307, USA.  */
 #undef MULTILIB_DEFAULTS
 #define MULTILIB_DEFAULTS { "EL" }
 
-/* long double is the same as double.  */
-#undef LONG_DOUBLE_TYPE_SIZE
-#define LONG_DOUBLE_TYPE_SIZE 64
-
 /* Allow objects (e.g. VFPU vectors) to be aligned to 16 bytes.  */
 #undef BIGGEST_ALIGNMENT
 #define BIGGEST_ALIGNMENT 128

@@ -73,7 +73,8 @@ static cpp_hashnode *parse_identifier PARAMS ((cpp_reader *));
 static uchar *parse_slow PARAMS ((cpp_reader *, const uchar *, int,
 				  unsigned int *));
 static void parse_number PARAMS ((cpp_reader *, cpp_string *, int));
-static int unescaped_terminator_p PARAMS ((cpp_reader *, const uchar *));
+static int unescaped_terminator_p PARAMS ((cpp_reader *, const uchar *,
+					   const uchar *));
 static void parse_string PARAMS ((cpp_reader *, cpp_token *, cppchar_t));
 static bool trigraph_p PARAMS ((cpp_reader *));
 static void save_comment PARAMS ((cpp_reader *, cpp_token *, const uchar *,
@@ -597,19 +598,20 @@ parse_number (pfile, number, leading_period)
     }
 }
 
-/* Subroutine of parse_string.  */
+/* Subroutine of parse_string.  START is where the backslashes may
+   begin: just after the last multibyte character, whose last byte may
+   look like a backslash.  */
 static int
-unescaped_terminator_p (pfile, dest)
+unescaped_terminator_p (pfile, dest, start)
      cpp_reader *pfile;
      const unsigned char *dest;
+     const unsigned char *start;
 {
-  const unsigned char *start, *temp;
+  const unsigned char *temp;
 
   /* In #include-style directives, terminators are not escapeable.  */
   if (pfile->state.angled_headers)
     return 1;
-
-  start = BUFF_FRONT (pfile->u_buff);
 
   /* An odd number of consecutive backslashes represents an escaped
      terminator.  */
@@ -633,16 +635,17 @@ parse_string (pfile, token, terminator)
      cppchar_t terminator;
 {
   cpp_buffer *buffer = pfile->buffer;
-  unsigned char *dest, *limit;
+  unsigned char *dest, *limit, *start;
   cppchar_t c;
   bool warned_nulls = false;
+  int char_len;
 #ifdef MULTIBYTE_CHARS
   wchar_t wc;
-  int char_len;
 #endif
 
   dest = BUFF_FRONT (pfile->u_buff);
   limit = BUFF_LIMIT (pfile->u_buff);
+  start = dest;
 
 #ifdef MULTIBYTE_CHARS
   /* Reset multibyte conversion state.  */
@@ -650,22 +653,14 @@ parse_string (pfile, token, terminator)
 #endif
   for (;;)
     {
-      /* We need room for another char, possibly the terminating NUL.  */
-      if ((size_t) (limit - dest) < 1)
-	{
-	  size_t len_so_far = dest - BUFF_FRONT (pfile->u_buff);
-	  _cpp_extend_buff (pfile, &pfile->u_buff, 2);
-	  dest = BUFF_FRONT (pfile->u_buff) + len_so_far;
-	  limit = BUFF_LIMIT (pfile->u_buff);
-	}
-
 #ifdef MULTIBYTE_CHARS
       char_len = local_mbtowc (&wc, (const char *) buffer->cur,
 			       buffer->rlimit - buffer->cur);
       if (char_len == -1)
 	{
-	  cpp_error (pfile, DL_WARNING,
-		     "ignoring invalid multibyte character");
+	  if (buffer->rlimit != buffer->cur)
+	    cpp_error (pfile, DL_WARNING,
+		       "ignoring invalid multibyte character");
 	  char_len = 1;
 	  c = *buffer->cur++;
 	}
@@ -675,8 +670,20 @@ parse_string (pfile, token, terminator)
 	  c = wc;
 	}
 #else
+      char_len = 1;
       c = *buffer->cur++;
 #endif
+
+      /* We need room for the character, possibly the terminating NUL.  */
+      if ((size_t) (limit - dest) < char_len + 1)
+	{
+	  size_t len_so_far = dest - BUFF_FRONT (pfile->u_buff);
+	  size_t start_ofs = start - BUFF_FRONT (pfile->u_buff);
+	  _cpp_extend_buff (pfile, &pfile->u_buff, char_len + 1);
+	  dest = BUFF_FRONT (pfile->u_buff) + len_so_far;
+	  start = BUFF_FRONT (pfile->u_buff) + start_ofs;
+	  limit = BUFF_LIMIT (pfile->u_buff);
+	}
 
       /* Handle trigraphs, escaped newlines etc.  */
       if (c == '?' || c == '\\')
@@ -684,7 +691,7 @@ parse_string (pfile, token, terminator)
 
       if (c == terminator)
 	{
-	  if (unescaped_terminator_p (pfile, dest))
+	  if (unescaped_terminator_p (pfile, dest, start))
 	    break;
 	}
       else if (is_vspace (c))
@@ -715,7 +722,8 @@ parse_string (pfile, token, terminator)
       if (char_len > 1)
 	{
 	  for ( ; char_len > 0; --char_len)
-	    *dest++ = (*buffer->cur - char_len);
+	    *dest++ = *(buffer->cur - char_len);
+	  start = dest;
 	}
       else
 #endif
