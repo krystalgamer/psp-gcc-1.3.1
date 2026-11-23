@@ -61,6 +61,9 @@ enum processor_type {
   PROCESSOR_R3000,
   PROCESSOR_R3900,
   PROCESSOR_R6000,
+  PROCESSOR_ALLEGREX2,
+  PROCESSOR_ALLEGREX3,
+  PROCESSOR_ALLEGREX31,
   PROCESSOR_R4000,
   PROCESSOR_R4100,
   PROCESSOR_R4111,
@@ -239,6 +242,11 @@ extern void		sbss_section PARAMS ((void));
 					   multiply-add operations.  */
 #define MASK_BRANCHLIKELY  0x02000000   /* Generate Branch Likely
 					   instructions.  */
+#define MASK_NO_ULSW	   0x10000000	/* Don't use unaligned load/store
+					   word instructions.  */
+#define MASK_EXT	   0x20000000	/* Use insert/extract instructions.  */
+#define MASK_MADD	   0x40000000	/* Use multiply/add multiply/sub
+					   instructions.  */
 
 					/* Debug switches, not documented */
 #define MASK_DEBUG	0		/* unused */
@@ -331,6 +339,10 @@ extern void		sbss_section PARAMS ((void));
 
 #define TARGET_BRANCHLIKELY	(target_flags & MASK_BRANCHLIKELY)
 
+#define TARGET_NO_ULSW		(target_flags & MASK_NO_ULSW)
+#define TARGET_EXT		(target_flags & MASK_EXT)
+#define TARGET_MADD		(target_flags & MASK_MADD)
+
 /* This is true if we must enable the assembly language file switching
    code.  */
 
@@ -365,6 +377,10 @@ extern void		sbss_section PARAMS ((void));
 #define TARGET_MIPS5500             (mips_arch == PROCESSOR_R5500)
 #define TARGET_SB1                  (mips_arch == PROCESSOR_SB1)
 #define TARGET_SR71K                (mips_arch == PROCESSOR_SR71000)
+#define TARGET_ALLEGREX             (mips_arch == PROCESSOR_ALLEGREX2	\
+				     || mips_arch == PROCESSOR_ALLEGREX3 \
+				     || mips_arch == PROCESSOR_ALLEGREX31)
+#define TARGET_ALLEGREX31           (mips_arch == PROCESSOR_ALLEGREX31)
 
 /* Scheduling target defines.  */
 #define TUNE_MIPS3000               (mips_tune == PROCESSOR_R3000)
@@ -376,6 +392,12 @@ extern void		sbss_section PARAMS ((void));
 #define TUNE_MIPS6000               (mips_tune == PROCESSOR_R6000)
 #define TUNE_SB1                    (mips_tune == PROCESSOR_SB1)
 #define TUNE_SR71K                  (mips_tune == PROCESSOR_SR71000)
+#define TUNE_ALLEGREX2              (mips_tune == PROCESSOR_ALLEGREX2)
+#define TUNE_ALLEGREX3              (mips_tune == PROCESSOR_ALLEGREX3)
+#define TUNE_ALLEGREX31             (mips_tune == PROCESSOR_ALLEGREX31)
+#define TUNE_ALLEGREX               (TUNE_ALLEGREX2			\
+				     || TUNE_ALLEGREX3			\
+				     || TUNE_ALLEGREX31)
 
 /* Define preprocessor macros for the -march and -mtune options.
    PREFIX is either _MIPS_ARCH or _MIPS_TUNE, INFO is the selected
@@ -471,6 +493,9 @@ extern void		sbss_section PARAMS ((void));
 								\
       if (TARGET_SINGLE_FLOAT)					\
 	  builtin_define ("__mips_single_float");		\
+								\
+      if (flag_short_double)					\
+	  builtin_define ("__mips_short_double");		\
 								\
       if (TARGET_BIG_ENDIAN)					\
 	{							\
@@ -608,6 +633,18 @@ extern void		sbss_section PARAMS ((void));
      N_("Use multiply accumulate")},					\
   {"no-mad",		 -MASK_MAD,					\
      N_("Don't use multiply accumulate")},				\
+  {"no-ulsw",		  MASK_NO_ULSW,					\
+     N_("Don't use unaligned load/store word instructions")},		\
+  {"ulsw",		 -MASK_NO_ULSW,					\
+     N_("Use unaligned load/store word instructions")},		\
+  {"ext",		  MASK_EXT,					\
+     N_("Use insert extract instructions")},				\
+  {"no-ext",		 -MASK_EXT,					\
+     N_("Don't use insert extract instructions")},			\
+  {"madd",		  MASK_MADD,					\
+     N_("Use multiply/add multiply/sub instructions")},		\
+  {"no-madd",		 -MASK_MADD,					\
+     N_("Don't use multiply/add multiply/sub instructions")},		\
   {"no-fused-madd",       MASK_NO_FUSED_MADD,                           \
      N_("Don't generate fused multiply/add instructions")},		\
   {"fused-madd",         -MASK_NO_FUSED_MADD,                           \
@@ -811,7 +848,7 @@ extern void		sbss_section PARAMS ((void));
 				 && !TARGET_MIPS16)
 
 /* ISA has just the integer condition move instructions (movn,movz) */
-#define ISA_HAS_INT_CONDMOVE     0
+#define ISA_HAS_INT_CONDMOVE     (TARGET_ALLEGREX31)
 
 /* ISA has the mips4 FP condition code instructions: FP-compare to CC,
    branch on CC, and move (both FP and non-FP) on CC.  */
@@ -828,6 +865,7 @@ extern void		sbss_section PARAMS ((void));
 
 /* ISA has conditional trap instructions.  */
 #define ISA_HAS_COND_TRAP	(!ISA_MIPS1				\
+				 && !TARGET_ALLEGREX			\
 				 && !TARGET_MIPS16)
 
 /* ISA has integer multiply-accumulate instructions, madd and msub.  */
@@ -882,6 +920,7 @@ extern void		sbss_section PARAMS ((void));
 #define ISA_HAS_ROTR_SI         (TARGET_MIPS5400                        \
                                  || TARGET_MIPS5500                     \
                                  || TARGET_SR71K                        \
+                                 || TARGET_ALLEGREX31                   \
                                  )
 
 /* ISA has 32-bit rotate right instruction.  */
@@ -1082,7 +1121,7 @@ extern int mips_abi;
 %{membedded-pic} \
 %{mabi=32:-32}%{mabi=n32:-n32}%{mabi=64:-64}%{mabi=n64:-64} \
 %{mabi=eabi} %{mabi=o64} %{!mabi*: %(asm_abi_default_spec)} \
-%{mgp32} %{mgp64} %{march=*} \
+%{mgp32} %{mgp64} %{march=*} %{mulsw} %{mno-ulsw} \
 %(target_asm_spec) \
 %(subtarget_asm_spec)"
 
@@ -1504,7 +1543,9 @@ do {							\
 /* The largest size of value that can be held in floating-point
    registers.  */
 #define UNITS_PER_FPVALUE \
-  (TARGET_SOFT_FLOAT ? 0 : (LONG_DOUBLE_TYPE_SIZE / BITS_PER_UNIT))
+  (TARGET_SOFT_FLOAT ? 0						\
+   : TARGET_ALLEGREX ? 4						\
+   : (LONG_DOUBLE_TYPE_SIZE / BITS_PER_UNIT))
 
 /* The number of bytes in a double.  */
 #define UNITS_PER_DOUBLE (TYPE_PRECISION (double_type_node) / BITS_PER_UNIT)
@@ -2571,7 +2612,8 @@ extern enum reg_class mips_char_to_class[256];
 #define OUTGOING_REG_PARM_STACK_SPACE
 
 #define STACK_BOUNDARY \
-  ((mips_abi == ABI_32 || mips_abi == ABI_O64 || mips_abi == ABI_EABI) \
+  (((mips_abi == ABI_32 || mips_abi == ABI_O64 || mips_abi == ABI_EABI) \
+    && !TARGET_ALLEGREX31)						\
    ? 64 : 128)
 
 /* Make sure 4 words are always allocated on the stack.  */
@@ -2874,7 +2916,8 @@ typedef struct mips_args {
 /* Treat LOC as a byte offset from the stack pointer and round it up
    to the next fully-aligned offset.  */
 #define MIPS_STACK_ALIGN(LOC)						\
-  ((mips_abi == ABI_32 || mips_abi == ABI_O64 || mips_abi == ABI_EABI)	\
+  (((mips_abi == ABI_32 || mips_abi == ABI_O64 || mips_abi == ABI_EABI) \
+    && !TARGET_ALLEGREX31)						\
    ? ((LOC) + 7) & ~7							\
    : ((LOC) + 15) & ~15)
 
@@ -3761,7 +3804,10 @@ typedef struct mips_args {
 /* ??? Fix this to be right for the R8000.  */
 #define BRANCH_COST							\
   ((! TARGET_MIPS16							\
-    && (TUNE_MIPS4000 || TUNE_MIPS6000))	\
+    && (TUNE_ALLEGREX3 || TUNE_ALLEGREX31))				\
+   ? 3									\
+   : (! TARGET_MIPS16							\
+      && (TUNE_MIPS4000 || TUNE_MIPS6000 || TUNE_ALLEGREX2))		\
    ? 2 : 1)
 
 /* If defined, modifies the length assigned to instruction INSN as a

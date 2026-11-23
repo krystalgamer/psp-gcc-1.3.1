@@ -101,6 +101,11 @@ extern const char      *mips_move_1word PARAMS ((rtx *, rtx, int));
 extern const char      *mips_move_2words PARAMS ((rtx *, rtx));
 extern const char      *mips_sign_extend PARAMS ((rtx, rtx, rtx));
 extern const char      *mips_emit_prefetch PARAMS ((rtx *));
+#ifdef TREE_CODE
+extern void		mips_init_builtins PARAMS ((void));
+extern rtx		mips_expand_builtin PARAMS ((tree, rtx, rtx,
+						     enum machine_mode, int));
+#endif
 extern const char      *mips_restore_gp PARAMS ((rtx *, rtx));
 extern const char      *output_block_move PARAMS ((rtx, rtx *, int,
 						   enum block_move_type));
