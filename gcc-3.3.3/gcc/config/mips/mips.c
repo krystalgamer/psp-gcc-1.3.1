@@ -3520,7 +3520,6 @@ gen_conditional_move (operands)
     abort ();
 
   cmp_reg = gen_reg_rtx (cmp_mode);
-  /* x ^ 0 is just x.  */
   if (cmp_code == XOR && GET_CODE (op1) == CONST_INT && INTVAL (op1) == 0)
     emit_insn (gen_rtx_SET (cmp_mode, cmp_reg, op0));
   else
@@ -3675,12 +3674,11 @@ mips_set_return_address (address, scratch)
 
 #define MAX_MOVE_REGS 4
 
-/* When unaligned word loads and stores are not available, an
-   unaligned block can only be moved in units of its alignment.  */
+/* Without unaligned word accesses, move in units of the alignment.  */
 #define MAX_MOVE_BYTES							\
-  (((align == 1 && !TARGET_NO_ULSW) || align >= UNITS_PER_WORD)	\
-   ? MAX_MOVE_REGS * UNITS_PER_WORD					\
-   : MAX_MOVE_REGS * align)
+  ((align == 1 && !TARGET_NO_ULSW) ? MAX_MOVE_REGS * UNITS_PER_WORD	\
+   : align < UNITS_PER_WORD ? MAX_MOVE_REGS * align			\
+   : MAX_MOVE_REGS * UNITS_PER_WORD)
 
 static void
 block_move_loop (dest_reg, src_reg, bytes, align, orig_dest, orig_src)
@@ -3763,10 +3761,7 @@ block_move_loop (dest_reg, src_reg, bytes, align, orig_dest, orig_src)
 				      align_rtx));
 }
 
-/* Allegrex version of block_move_loop.  The loop body loads
-   MAX_MOVE_REGS units of ALIGN bytes and interleaves the pointer
-   updates with the stores so that the load delays are hidden.  */
-
+/* Allegrex version of block_move_loop; hides the load delays.  */
 static void
 block_move_loop_allegrex (dest_reg, src_reg, bytes, align, orig_dest,
 			  orig_src)
@@ -3780,12 +3775,11 @@ block_move_loop_allegrex (dest_reg, src_reg, bytes, align, orig_dest,
   rtx dest_mem = replace_equiv_address (orig_dest, dest_reg);
   rtx src_mem = replace_equiv_address (orig_src, src_reg);
   rtx align_rtx = GEN_INT (align);
-  rtx label;
-  rtx final_src;
-  rtx bytes_rtx;
+  rtx label, final_src;
+  rtx bytes_rtx, step_rtx;
   rtx regs[MAX_MOVE_REGS];
   enum machine_mode mode;
-  int leftover;
+  int leftover, ofs2, ofs3;
 
   leftover = bytes % MAX_MOVE_BYTES;
   bytes -= leftover;
@@ -3807,19 +3801,20 @@ block_move_loop_allegrex (dest_reg, src_reg, bytes, align, orig_dest,
       else
 	emit_insn (gen_addsi3 (final_src, src_reg, bytes_rtx));
 
-      switch (align)
-	{
-	case 4: mode = SImode; break;
-	case 2: mode = HImode; break;
-	case 1: mode = QImode; break;
-	default: abort ();
-	}
+      if (align == 4)
+	mode = SImode;
+      else if (align == 2)
+	mode = HImode;
+      else if (align == 1)
+	mode = QImode;
+      else
+	abort ();
 
       regs[0] = gen_reg_rtx (mode);
       regs[1] = gen_reg_rtx (mode);
       regs[2] = gen_reg_rtx (mode);
       regs[3] = gen_reg_rtx (mode);
-      bytes_rtx = GEN_INT (MAX_MOVE_REGS * align);
+      step_rtx = GEN_INT (MAX_MOVE_REGS * align);
 
       emit_label (label);
 
@@ -3827,31 +3822,34 @@ block_move_loop_allegrex (dest_reg, src_reg, bytes, align, orig_dest,
 		      gen_rtx_MEM (mode, plus_constant (src_reg, 0)));
       emit_move_insn (regs[1],
 		      gen_rtx_MEM (mode, plus_constant (src_reg, align)));
+      ofs2 = 2 * align;
       emit_move_insn (regs[2],
-		      gen_rtx_MEM (mode, plus_constant (src_reg, 2 * align)));
+		      gen_rtx_MEM (mode, plus_constant (src_reg, ofs2)));
+      ofs3 = 3 * align;
       emit_move_insn (regs[3],
-		      gen_rtx_MEM (mode, plus_constant (src_reg, 3 * align)));
+		      gen_rtx_MEM (mode, plus_constant (src_reg, ofs3)));
 
-      if (TUNE_ALLEGREX2)
+      if (! TUNE_ALLEGREX2)
 	{
 	  emit_move_insn (gen_rtx_MEM (mode, plus_constant (dest_reg, 0)),
 			  regs[0]);
-	  emit_insn (gen_addsi3 (src_reg, src_reg, bytes_rtx));
-	  emit_move_insn (gen_rtx_MEM (mode, plus_constant (dest_reg, align)),
+	  emit_insn (gen_addsi3 (src_reg, src_reg, step_rtx));
+	  emit_insn (gen_addsi3 (dest_reg, dest_reg, step_rtx));
+	  emit_move_insn (gen_rtx_MEM (mode,
+				       plus_constant (dest_reg, -ofs3)),
 			  regs[1]);
-	  emit_insn (gen_addsi3 (dest_reg, dest_reg, bytes_rtx));
 	}
       else
 	{
 	  emit_move_insn (gen_rtx_MEM (mode, plus_constant (dest_reg, 0)),
 			  regs[0]);
-	  emit_insn (gen_addsi3 (src_reg, src_reg, bytes_rtx));
-	  emit_insn (gen_addsi3 (dest_reg, dest_reg, bytes_rtx));
-	  emit_move_insn (gen_rtx_MEM (mode,
-				       plus_constant (dest_reg, -3 * align)),
+	  emit_insn (gen_addsi3 (src_reg, src_reg, step_rtx));
+	  emit_move_insn (gen_rtx_MEM (mode, plus_constant (dest_reg, align)),
 			  regs[1]);
+	  emit_insn (gen_addsi3 (dest_reg, dest_reg, step_rtx));
 	}
-      emit_move_insn (gen_rtx_MEM (mode, plus_constant (dest_reg, -2 * align)),
+      emit_move_insn (gen_rtx_MEM (mode,
+				   plus_constant (dest_reg, -ofs2)),
 		      regs[2]);
       emit_move_insn (gen_rtx_MEM (mode, plus_constant (dest_reg, -align)),
 		      regs[3]);
@@ -3918,31 +3916,43 @@ expand_block_move (operands)
   if (constp && bytes == 0)
     return;
 
-  if (align > (unsigned) UNITS_PER_WORD)
-    align = UNITS_PER_WORD;
-
   /* Move the address into scratch registers.  */
   dest_reg = copy_addr_to_reg (XEXP (orig_dest, 0));
   src_reg  = copy_addr_to_reg (XEXP (orig_src, 0));
 
-  if (TARGET_MEMCPY)
-    block_move_call (dest_reg, src_reg, bytes_rtx);
+  if (TARGET_MEMCPY || ! constp)
+    {
+      block_move_call (dest_reg, src_reg, bytes_rtx);
+      return;
+    }
 
-  else if (constp && bytes <= (unsigned)2 * MAX_MOVE_BYTES
-	   && align == (unsigned) UNITS_PER_WORD)
-    move_by_pieces (orig_dest, orig_src, bytes, align * BITS_PER_WORD);
+  /* Only constant sizes are expanded inline from here on.  Clamp the
+     alignment first: MAX_MOVE_BYTES depends on it, and so does the
+     choice between move_by_pieces and the loops below.  */
+  if (align > (unsigned) UNITS_PER_WORD)
+    align = UNITS_PER_WORD;
 
-  else if (constp && bytes <= (unsigned)2 * MAX_MOVE_BYTES)
+  if (bytes <= (unsigned)2 * MAX_MOVE_BYTES
+      && align == (unsigned) UNITS_PER_WORD)
+    {
+      move_by_pieces (orig_dest, orig_src, bytes, align * BITS_PER_WORD);
+      return;
+    }
+
+  else if (bytes <= (unsigned)2 * MAX_MOVE_BYTES)
     emit_insn (gen_movstrsi_internal (replace_equiv_address (orig_dest,
 							     dest_reg),
 				      replace_equiv_address (orig_src,
 							     src_reg),
 				      bytes_rtx, align_rtx));
 
-  else if (constp && align >= (unsigned) UNITS_PER_WORD && optimize)
-    block_move_loop (dest_reg, src_reg, bytes, align, orig_dest, orig_src);
+  else if (align >= (unsigned) UNITS_PER_WORD && optimize)
+    {
+      block_move_loop (dest_reg, src_reg, bytes, align, orig_dest, orig_src);
+      return;
+    }
 
-  else if (constp && optimize)
+  else if (optimize)
     {
       /* If the alignment is not word aligned, generate a test at
 	 runtime, to see whether things wound up aligned, and we
