@@ -3520,8 +3520,12 @@ gen_conditional_move (operands)
     abort ();
 
   cmp_reg = gen_reg_rtx (cmp_mode);
-  emit_insn (gen_rtx_SET (cmp_mode, cmp_reg,
-			  gen_rtx (cmp_code, cmp_mode, op0, op1)));
+  /* x ^ 0 is just x.  */
+  if (cmp_code == XOR && GET_CODE (op1) == CONST_INT && INTVAL (op1) == 0)
+    emit_insn (gen_rtx_SET (cmp_mode, cmp_reg, op0));
+  else
+    emit_insn (gen_rtx_SET (cmp_mode, cmp_reg,
+			    gen_rtx (cmp_code, cmp_mode, op0, op1)));
 
   emit_insn (gen_rtx_SET (op_mode, operands[0],
 			  gen_rtx_IF_THEN_ELSE (op_mode,
@@ -3947,9 +3951,6 @@ expand_block_move (operands)
       rtx temp = gen_reg_rtx (Pmode);
       rtx aligned_label = gen_label_rtx ();
       rtx join_label = gen_label_rtx ();
-      int leftover = bytes % MAX_MOVE_BYTES;
-
-      bytes -= leftover;
 
       if (Pmode == DImode)
 	{
@@ -3977,14 +3978,8 @@ expand_block_move (operands)
 		       orig_src);
       emit_label (join_label);
 
-      /* Bytes at the end of the loop.  */
-      if (leftover)
-	emit_insn (gen_movstrsi_internal (replace_equiv_address (orig_dest,
-								 dest_reg),
-					  replace_equiv_address (orig_src,
-								 src_reg),
-					  GEN_INT (leftover),
-					  GEN_INT (align)));
+      /* Each loop moves its own trailing bytes, since the number of
+	 bytes moved per iteration depends on the alignment.  */
     }
 
   else
