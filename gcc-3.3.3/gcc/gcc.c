@@ -3178,7 +3178,16 @@ process_command (argc, argv)
 #ifdef PSP_SDK_HOME_ENV
   /* Search the PSP SDK directories.  */
   temp = getenv (PSP_SDK_HOME_ENV);
-  if (temp)
+  if (temp == NULL)
+    {
+      add_prefix (&include_prefixes, PSP_SDK_HOME_DEFAULT "/include", NULL,
+		  PREFIX_PRIORITY_LAST, 0, NULL, 0);
+      add_prefix (&exec_prefixes, PSP_SDK_HOME_DEFAULT "/bin/", NULL,
+		  PREFIX_PRIORITY_LAST, 0, NULL, 0);
+      add_prefix (&startfile_prefixes, PSP_SDK_HOME_DEFAULT "/lib/", NULL,
+		  PREFIX_PRIORITY_LAST, 0, NULL, 0);
+    }
+  else
     {
       char *sdk_dir = (char *) alloca (strlen (temp) + 12);
 
@@ -3193,15 +3202,6 @@ process_command (argc, argv)
       strcpy (sdk_dir, temp);
       strcat (sdk_dir, "/lib/");
       add_prefix (&startfile_prefixes, sdk_dir, NULL,
-		  PREFIX_PRIORITY_LAST, 0, NULL, 0);
-    }
-  else
-    {
-      add_prefix (&include_prefixes, PSP_SDK_HOME_DEFAULT "/include", NULL,
-		  PREFIX_PRIORITY_LAST, 0, NULL, 0);
-      add_prefix (&exec_prefixes, PSP_SDK_HOME_DEFAULT "/bin/", NULL,
-		  PREFIX_PRIORITY_LAST, 0, NULL, 0);
-      add_prefix (&startfile_prefixes, PSP_SDK_HOME_DEFAULT "/lib/", NULL,
 		  PREFIX_PRIORITY_LAST, 0, NULL, 0);
     }
 #endif
@@ -6103,27 +6103,32 @@ main (argc, argv)
     read_specs (specs_file, TRUE);
 
 #ifdef PSP_SDK_HOME_ENV
-  /* Read the PSP SDK specs file.  Try the versioned name first, then
-     drop "_N" suffixes until one is found.  */
+  /* Read the PSP SDK specs file, dropping "_N" suffixes until found.  */
   {
-    const char *sdk_home = getenv (PSP_SDK_HOME_ENV);
-    char *psp_specs, *p;
+    char *sdk_home;
 
-    if (sdk_home == NULL)
-      sdk_home = PSP_SDK_HOME_DEFAULT;
-    psp_specs = (char *) alloca (strlen (sdk_home)
-				 + sizeof (PSP_SDK_SPECS_FILE) + 2);
-    strcpy (psp_specs, sdk_home);
-    strcat (psp_specs, PSP_SDK_SPECS_FILE);
+    specs_file = getenv (PSP_SDK_HOME_ENV);
+    if (specs_file == NULL)
+      {
+	specs_file = (char *) alloca (sizeof (PSP_SDK_HOME_DEFAULT));
+	strcpy (specs_file, PSP_SDK_HOME_DEFAULT);
+      }
+    sdk_home = specs_file;
+    specs_file = (char *) alloca (strlen (sdk_home)
+				  + sizeof (PSP_SDK_SPECS_FILE) + 2);
+    strcpy (specs_file, sdk_home);
+    strcat (specs_file, PSP_SDK_SPECS_FILE);
     for (;;)
       {
-	if (access (psp_specs, R_OK) == 0)
+	char *q;
+
+	if (access (specs_file, R_OK) == 0)
 	  {
-	    read_specs (psp_specs, TRUE);
+	    read_specs (specs_file, TRUE);
 	    break;
 	  }
-	p = strrchr (psp_specs, '_');
-	if (p == NULL)
+	q = strrchr (specs_file, '_');
+	if (q == NULL)
 	  {
 	    if (getenv (PSP_SDK_HOME_ENV) == NULL)
 	      {
@@ -6132,7 +6137,7 @@ main (argc, argv)
 	      }
 	    break;
 	  }
-	*p = '\0';
+	*q = '\0';
       }
   }
 #endif
