@@ -225,44 +225,25 @@
 
 (define_function_unit "memory" 1 0
   (and (eq_attr "type" "load")
-       (eq_attr "cpu" "!r3000,r3900,allegrex2,r4600,r4650,r4100,r4120,r4300,r5000"))
+       (eq_attr "cpu" "!r3000,r3900,allegrex2,allegrex3,allegrex31,r4600,r4650,r4100,r4120,r4300,r5000"))
   3 0)
 
 (define_function_unit "memory" 1 0
   (and (eq_attr "type" "load")
-       (eq_attr "cpu" "r3000,r3900,allegrex2,r4600,r4650,r4100,r4120,r4300,r5000"))
+       (eq_attr "cpu" "r3000,r3900,r4600,r4650,r4100,r4120,r4300,r5000"))
   2 0)
 
 (define_function_unit "memory"   1 0
-  (and (eq_attr "type" "store")
-       (eq_attr "cpu" "!allegrex2,allegrex3,allegrex31"))
+  (and (eq_attr "type" "store") (eq_attr "cpu" "!allegrex2,allegrex3,allegrex31"))
   1 0)
 
 (define_function_unit "memory"   1 0
-  (and (eq_attr "type" "store") (eq_attr "cpu" "allegrex2"))
-  2 2)
-
-(define_function_unit "memory"   1 0
-  (and (eq_attr "type" "store") (eq_attr "cpu" "allegrex3,allegrex31"))
-  3 3)
-
-(define_function_unit "memory"   1 0
-  (and (eq_attr "type" "xfer")
-       (eq_attr "cpu" "!allegrex3,allegrex31"))
+  (and (eq_attr "type" "xfer") (eq_attr "cpu" "!allegrex2,allegrex3,allegrex31"))
   2 0)
 
-(define_function_unit "memory"   1 0
-  (and (eq_attr "type" "xfer") (eq_attr "cpu" "allegrex3,allegrex31"))
-  3 0)
-
 (define_function_unit "imuldiv"  1 0
-  (and (eq_attr "type" "hilo")
-       (eq_attr "cpu" "!allegrex2,allegrex3,allegrex31"))
+  (and (eq_attr "type" "hilo") (eq_attr "cpu" "!allegrex2,allegrex3,allegrex31"))
   1 3)
-
-(define_function_unit "imuldiv"  1 0
-  (and (eq_attr "type" "hilo") (eq_attr "cpu" "allegrex2,allegrex3,allegrex31"))
-  1 1)
 
 (define_function_unit "imuldiv"  1 0
   (and (eq_attr "type" "imul,imadd")
@@ -288,12 +269,8 @@
   10 10)
 
 (define_function_unit "imuldiv"  1 0
-  (and (eq_attr "type" "imul,imadd") (eq_attr "cpu" "r4650,allegrex2"))
+  (and (eq_attr "type" "imul,imadd") (eq_attr "cpu" "r4650"))
   4 4)
-
-(define_function_unit "imuldiv"  1 0
-  (and (eq_attr "type" "imul,imadd") (eq_attr "cpu" "allegrex3,allegrex31"))
-  5 5)
 
 (define_function_unit "imuldiv"  1 0
   (and (eq_attr "type" "imul,imadd")
@@ -326,7 +303,7 @@
   38 38)
 
 (define_function_unit "imuldiv"  1 0
-  (and (eq_attr "type" "idiv") (eq_attr "cpu" "r3000,r3900,allegrex2"))
+  (and (eq_attr "type" "idiv") (eq_attr "cpu" "r3000,r3900"))
   35 35)
 
 (define_function_unit "imuldiv"  1 0
@@ -334,7 +311,7 @@
   42 42)
 
 (define_function_unit "imuldiv"  1 0
-  (and (eq_attr "type" "idiv") (eq_attr "cpu" "r4650,allegrex3,allegrex31"))
+  (and (eq_attr "type" "idiv") (eq_attr "cpu" "r4650"))
   36 36)
 
 (define_function_unit "imuldiv"  1 0
@@ -526,6 +503,106 @@
        (and (eq_attr "mode" "DF") (eq_attr "cpu" "r5000")))
   36 0)
 
+;; Allegrex function units.
+
+(define_function_unit "memory" 1 0
+  (and (eq_attr "type" "load") (eq_attr "cpu" "allegrex2"))
+  2 0)
+
+(define_function_unit "memory" 1 0
+  (and (eq_attr "type" "load") (eq_attr "cpu" "allegrex3,allegrex31"))
+  3 0)
+
+(define_function_unit "memory" 1 0
+  (and (eq_attr "type" "store") (eq_attr "cpu" "allegrex2"))
+  2 2 [(eq_attr "type" "!xfer")])
+
+(define_function_unit "memory" 1 0
+  (and (eq_attr "type" "store") (eq_attr "cpu" "allegrex3,allegrex31"))
+  3 3 [(eq_attr "type" "!xfer")])
+
+(define_function_unit "memory" 1 0
+  (and (eq_attr "type" "xfer") (eq_attr "cpu" "allegrex2"))
+  2 0)
+
+(define_function_unit "memory" 1 0
+  (and (eq_attr "type" "xfer") (eq_attr "cpu" "allegrex3,allegrex31"))
+  3 0)
+
+(define_function_unit "imuldiv" 1 0
+  (and (eq_attr "type" "hilo") (eq_attr "cpu" "allegrex2"))
+  1 1)
+
+(define_function_unit "imuldiv" 1 0
+  (and (eq_attr "type" "hilo") (eq_attr "cpu" "allegrex3,allegrex31"))
+  1 1)
+
+(define_function_unit "imuldiv" 1 0
+  (and (eq_attr "type" "imul,imadd") (eq_attr "cpu" "allegrex2"))
+  4 4)
+
+(define_function_unit "imuldiv" 1 0
+  (and (eq_attr "type" "imul,imadd") (eq_attr "cpu" "allegrex3,allegrex31"))
+  5 5)
+
+(define_function_unit "imuldiv" 1 0
+  (and (eq_attr "type" "idiv") (eq_attr "cpu" "allegrex2"))
+  35 35)
+
+(define_function_unit "imuldiv" 1 0
+  (and (eq_attr "type" "idiv") (eq_attr "cpu" "allegrex3,allegrex31"))
+  36 36)
+
+;; The Allegrex has a single floating point unit for all operations.
+
+(define_function_unit "faddmul" 1 0
+  (and (eq_attr "type" "fcmp") (eq_attr "cpu" "allegrex2"))
+  3 1)
+
+(define_function_unit "faddmul" 1 0
+  (and (eq_attr "type" "fcmp") (eq_attr "cpu" "allegrex3,allegrex31"))
+  4 1)
+
+(define_function_unit "faddmul" 1 0
+  (and (eq_attr "type" "fadd,fmul") (eq_attr "cpu" "allegrex2"))
+  4 1)
+
+(define_function_unit "faddmul" 1 0
+  (and (eq_attr "type" "fadd,fmul") (eq_attr "cpu" "allegrex3,allegrex31"))
+  4 1)
+
+(define_function_unit "faddmul" 1 0
+  (and (eq_attr "type" "fabs,fneg") (eq_attr "cpu" "allegrex2"))
+  4 1)
+
+(define_function_unit "faddmul" 1 0
+  (and (eq_attr "type" "fabs,fneg") (eq_attr "cpu" "allegrex3,allegrex31"))
+  4 1)
+
+(define_function_unit "faddmul" 1 0
+  (and (eq_attr "type" "fdiv") (eq_attr "cpu" "allegrex2"))
+  30 28)
+
+(define_function_unit "faddmul" 1 0
+  (and (eq_attr "type" "fdiv") (eq_attr "cpu" "allegrex3,allegrex31"))
+  30 28)
+
+(define_function_unit "faddmul" 1 0
+  (and (eq_attr "type" "fsqrt") (eq_attr "cpu" "allegrex2"))
+  30 28)
+
+(define_function_unit "faddmul" 1 0
+  (and (eq_attr "type" "fsqrt") (eq_attr "cpu" "allegrex3,allegrex31"))
+  30 28)
+
+(define_function_unit "faddmul" 1 0
+  (and (eq_attr "type" "fcvt") (eq_attr "cpu" "allegrex2"))
+  4 1)
+
+(define_function_unit "faddmul" 1 0
+  (and (eq_attr "type" "fcvt") (eq_attr "cpu" "allegrex3,allegrex31"))
+  4 1)
+
 ;; R4300 FP instruction classes treated as part of the "imuldiv"
 ;; functional unit:
 
@@ -553,26 +630,6 @@
        (and (eq_attr "mode" "DF") (eq_attr "cpu" "r4300")))
   58 58)
 
-;; The Allegrex has a single floating point unit that handles adds,
-;; multiplies, conversions, compares, divides and square roots.
-
-(define_function_unit "faddmul" 1 0
-  (and (eq_attr "type" "fadd,fmul,fabs,fneg,fcvt")
-       (eq_attr "cpu" "allegrex2,allegrex3,allegrex31"))
-  4 1)
-
-(define_function_unit "faddmul" 1 0
-  (and (eq_attr "type" "fcmp") (eq_attr "cpu" "allegrex2"))
-  3 1)
-
-(define_function_unit "faddmul" 1 0
-  (and (eq_attr "type" "fcmp") (eq_attr "cpu" "allegrex3,allegrex31"))
-  4 1)
-
-(define_function_unit "faddmul" 1 0
-  (and (eq_attr "type" "fdiv,fsqrt") (eq_attr "cpu" "allegrex2,allegrex3,allegrex31"))
-  30 28)
-
 ;; The following functional units do not use the cpu type, and use
 ;; much less memory in genattrtab.c.
 
