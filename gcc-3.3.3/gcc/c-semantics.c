@@ -273,7 +273,13 @@ emit_local_var (decl)
 	  (decl, IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl)),
 	   /*top_level=*/0, /*at_end=*/0);
       else
-	expand_decl (decl);
+	{
+	  if (DECL_ALIGN (decl) > STACK_BOUNDARY)
+	    warning_with_decl (decl,
+			       "`%s' requested alignment on stack is greater than %d",
+			       STACK_BOUNDARY / BITS_PER_UNIT);
+	  expand_decl (decl);
+	}
     }
 
   /* Actually do the initialization.  */
