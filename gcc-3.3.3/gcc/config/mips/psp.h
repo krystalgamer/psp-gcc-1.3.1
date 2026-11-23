@@ -94,3 +94,10 @@ Boston, MA 02111-1307, USA.  */
       ASM_OUTPUT_ALIGNED_COMMON (FILE, NAME, SIZE, ALIGN);	\
     }								\
   while (0)
+
+/* Location of the PSP SDK ("devkit").  The driver searches its include,
+   bin and lib directories and reads the SDK specs file from its lib
+   directory; the environment variable overrides the default location.  */
+#define PSP_SDK_HOME_ENV	"SCE_PSP_SDK_HOME"
+#define PSP_SDK_HOME_DEFAULT	"/usr/local/psp/devkit"
+#define PSP_SDK_SPECS_FILE	"/lib/pspspecs_1_3_1"
