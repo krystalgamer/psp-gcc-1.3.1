@@ -5164,7 +5164,8 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 		  /* Set V after the second period.  */
 		  while (ISDIGIT (*v))
 		    v++;
-		  if ((*v != 0) && (*v != ' ') && (*v != '.') && (*v != '-'))
+		  if ((*v != 0) && (*v != ' ') && (*v != '.') && (*v != '-')
+		      && (*v != '+'))
 		    abort ();
 		  if (*v != 0)
 		    v++;
@@ -5174,7 +5175,8 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 	      q = v;
 	      while (ISDIGIT (*q))
 		q++;
-	      if (*q != 0 && q > v && *q != ' ' && *q != '.' && *q != '-')
+	      if (*q != 0 && q > v && *q != ' ' && *q != '.' && *q != '-'
+		  && *q != '+')
 		abort ();
 
 	      if (q > v)
