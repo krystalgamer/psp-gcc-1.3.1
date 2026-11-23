@@ -503,7 +503,8 @@
        (and (eq_attr "mode" "DF") (eq_attr "cpu" "r5000")))
   36 0)
 
-;; Allegrex function units.
+;; Allegrex function units.  allegrex2 and allegrex3/allegrex31 differ
+;; in their load, multiply, divide and floating point latencies.
 
 (define_function_unit "memory" 1 0
   (and (eq_attr "type" "load") (eq_attr "cpu" "allegrex2"))
@@ -4992,6 +4993,26 @@ move\\t%0,%z4\\n\\
 ;; ??? There could be HImode variants for the ulh/ulhu/ush macros.
 ;; It isn't clear whether this will give better code.
 
+;; On the Allegrex the bit field patterns are selected as follows:
+;;
+;;   - extzv and insv on a register use the Allegrex 3.1 ext and ins
+;;     instructions (extzv_allegrex_insn and insv_allegrex_insn) when
+;;     -mext is given.
+;;
+;;   - extv, extzv and insv on a byte aligned 32-bit field in memory
+;;     use unaligned word accesses (lwl/lwr and swl/swr); extzv and
+;;     insv do this through extzv_ulw and insv_usw.
+;;
+;;   - -mno-ulsw, which the PSP specs pass unless -mulsw is given,
+;;     disables the unaligned accesses; the expanders then FAIL and
+;;     the generic shift and mask code is used.
+;;
+;; The memory forms of extzv and insv are separate expanders so that
+;; they can FAIL independently of the register forms.
+;;
+;; extv has no Allegrex instruction form.
+;;
+
 ;; Only specify the mode operand 1, the rest are assumed to be word_mode.
 (define_expand "extv"
   [(set (match_operand 0 "register_operand" "")
@@ -7949,8 +7970,7 @@ move\\t%0,%z4\\n\\
   "ISA_HAS_ROTR_SI"
   "
 {
-  /* There is no rotate left instruction; rotate right by the
-     complementary amount instead.  */
+  /* There is no rotate left instruction; rotate right instead.  */
   if (GET_CODE (operands[2]) == CONST_INT)
     operands[2] = GEN_INT (32 - INTVAL (operands[2]));
   else
@@ -10919,6 +10939,31 @@ ld\\t%2,%1-%S1(%2)\;daddu\\t%2,%2,$31\\n\\t%*j\\t%2"
 ;;	ALLEGREX INSTRUCTIONS
 ;;
 ;;  ....................
+;;
+;; Availability:
+;;
+;;   all Allegrex CPUs	clz, clo, the ceil/floor/round/trunc.w.s
+;;			conversions and ffs; madd/msub need -mmadd
+;;
+;;   Allegrex 3.1 only	min, max, seb, seh (when optimizing), wsbw,
+;;			wsbh, bitrev, ext, ins (register forms need
+;;			-mext), cache, sync, ctz and cto
+;;
+;; Most of these are also reachable through the __builtin_allegrex_*
+;; functions, see mips_expand_builtin in mips.c.
+;;
+;; The madd/msub patterns accumulate into LO and clobber HI and the
+;; HI/LO pair, so that the scheduler sees the dependence on the
+;; multiply unit.
+;;
+;; seb/seh are only used when optimizing; at -O0 extendhisi2 and
+;; extendqisi2 keep the shift sequences of the other MIPS targets.
+;;
+;; cache and sync are unspec_volatile so that they are never deleted
+;; or moved across other volatile operations.
+;;
+;; The ffs, ctz and cto expanders and the sminsi3/smaxsi3 expanders
+;; at the end of this section are built from the instructions above.
 ;;
 
 ;; Multiply-accumulate into HI/LO.
