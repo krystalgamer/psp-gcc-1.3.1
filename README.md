@@ -6,9 +6,11 @@ be rebuilt and kept running on modern 64-bit hosts. The original release
 binaries are 32-bit x86 Linux programs. Reference archive:
 <https://github.com/decompme/compilers/releases/download/compilers/psp-gcc-1.3.1.tar.gz>.
 
-Sony never published the patches. `gcc-3.3.3/` starts from pristine FSF
-GCC 3.3.3 (tag `fsf-gcc-3.3.3`). The changes on top were reconstructed from
-the original binaries, which have symbols:
+Sony distributed its GCC sources and patches to licensed developers only,
+through the PlayStation developer network (DevNet); they were never
+publicly released. This tree does not use them. `gcc-3.3.3/` starts from
+pristine FSF GCC 3.3.3 (tag `fsf-gcc-3.3.3`), and every PSP change on top
+was reconstructed from the public release binaries, which have symbols:
 
 - strings and symbols
 - `insn_data`
@@ -16,7 +18,9 @@ the original binaries, which have symbols:
 - decompiled functions
 - the installed headers, specs, libraries and message catalogs
 
-The reconstruction was then checked by rebuilding with the original
+Because the patches were rebuilt from binaries, code that left no trace in
+them, such as comments and formatting, is not necessarily Sony's. The
+reconstruction was then checked by rebuilding with the original
 toolchain: built that way, the `sony` branch reproduces the original
 `psp-gcc`, `psp-cpp`, `cc1`, `cc1plus` and `collect2` byte for byte (see
 "Verification"). Binutils are not covered here.
