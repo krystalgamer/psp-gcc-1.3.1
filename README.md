@@ -17,7 +17,9 @@ the original binaries, which have symbols:
 - the installed headers, specs, libraries and message catalogs
 
 The reconstruction was then checked by rebuilding with the original
-toolchain (see "Verification"). Binutils are not covered here.
+toolchain: built that way, the `sony` branch reproduces the original
+`psp-gcc`, `psp-cpp`, `cc1`, `cc1plus` and `collect2` byte for byte (see
+"Verification"). Binutils are not covered here.
 
 ## Branches
 
@@ -106,12 +108,8 @@ Requirements:
   - default `-g -O2`, configured from a sibling directory
   - binaries stripped with `strip -g`, like rpmbuild's `brp-strip`
 - **Results:**
-  - **byte-identical to the original:** `psp-gcc`, `psp-cpp` and `collect2`
-  - **`cc1`/`cc1plus`:** 5550 of 5560 functions are identical (6812 of 6822 in `cc1plus`), including the line numbers in every `abort()` call
-  - the remaining 10 differ in code shape only:
-    - 9 come from genattrtab's function-unit tables: `*_unit_*`, `function_units_used`, `result_ready_cost`, `insn_latency`, `min_insn_conflict_delay`. They depend on the exact order of the `define_function_unit` rules; their values are identical.
-    - in `block_move_loop_allegrex`, two variables swap a register and a stack slot; the instructions are otherwise identical
-  - `tools/fcmp.py` compares two executables function by function
+  - **byte-identical to the original:** `psp-gcc`, `psp-cpp`, `collect2`, `cc1` and `cc1plus`
+  - `tools/fcmp.py` compares two executables function by function, which helps locate differences
 
 ### `master` on a modern x86_64 host
 
