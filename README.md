@@ -61,6 +61,7 @@ git format-patch sony..master -- gcc-3.3.3           # the host/x64 port
 - **`combine.c`:**
   - in comparisons, an AND with any contiguous run of ones becomes a bit-field extract
   - wide low-order extracts are kept
+  - the original `cc1` takes this path (checked with a breakpoint on the original binary), for example on `gcc.dg/c99-bool-1.c` at `-O1`; stock 3.3.3 produces different code there
 - **`c-semantics.c`:** warns when a local variable asks for more alignment than the stack provides.
 - **libstdc++:** `mipspspel` atomicity and 16-byte allocator alignment.
 - **Japanese translation:** `gcc/po/ja.{po,gmo}`, revision 2004-07-13.
@@ -74,6 +75,7 @@ git format-patch sony..master -- gcc-3.3.3           # the host/x64 port
 - `libiberty/stable-qsort.c`, `gcc/system.h`:
   - every `qsort` in GCC uses a merge sort that behaves exactly like the glibc 2.3 `qsort` of the original build host
   - so the output does not depend on the host C library when a comparison returns 0 for different elements
+- `dwarf2out.c`: DWARF attribute values are kept in 32 bits, as on the i386 host. Otherwise large enum constants in `-g` output are encoded differently on LP64 hosts.
 - `ltmain.sh`: deterministic archive member order.
 - `gcc/Makefile.in`: fixes a parallel-make race.
 
@@ -105,11 +107,10 @@ Requirements:
   - binaries stripped with `strip -g`, like rpmbuild's `brp-strip`
 - **Results:**
   - **byte-identical to the original:** `psp-gcc`, `psp-cpp` and `collect2`
-  - **`cc1`/`cc1plus`:** 5549 of 5560 functions are identical (6811 of 6822 in `cc1plus`), including the line numbers in every `abort()` call
-  - the remaining 11 differ in code shape only:
+  - **`cc1`/`cc1plus`:** 5550 of 5560 functions are identical (6812 of 6822 in `cc1plus`), including the line numbers in every `abort()` call
+  - the remaining 10 differ in code shape only:
     - 9 come from genattrtab's function-unit tables: `*_unit_*`, `function_units_used`, `result_ready_cost`, `insn_latency`, `min_insn_conflict_delay`. They depend on the exact order of the `define_function_unit` rules; their values are identical.
-    - in `block_move_loop_allegrex`, two variables swap a register and a stack slot
-    - in `output_334`, the peephole pass picks different scratch registers
+    - in `block_move_loop_allegrex`, two variables swap a register and a stack slot; the instructions are otherwise identical
   - `tools/fcmp.py` compares two executables function by function
 
 ### `master` on a modern x86_64 host
@@ -120,6 +121,7 @@ binaries ran under an i386 glibc.
 - **`cc1`/`cc1plus` output is byte-identical**, including `-dp` output:
   - `gcc.c-torture` (1180 files, 12 option sets)
   - `gcc.dg` (904 files)
+  - `gcc.dg` + C++ with 8 more option sets: `-O1`; `-O2` with `-g`, `-mext -mmadd`, `-fshort-double`, `-mulsw`, `-ffast-math -fomit-frame-pointer -fno-common`, `-march=allegrex2`, `-march=allegrex3` (38872 compiles)
   - `g++.dg` + `g++.old-deja` (3955 files, `-O0`/`-O2`/`-Os`)
   - Shift-JIS/EUC-JP string tests
 - **Internals match:**
