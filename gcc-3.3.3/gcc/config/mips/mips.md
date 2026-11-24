@@ -11184,16 +11184,16 @@ ld\\t%2,%1-%S1(%2)\;daddu\\t%2,%2,$31\\n\\t%*j\\t%2"
     abort ();
   if (REGNO (operands[0]) == REGNO (operands[1]))
     output_asm_insn (\"ins\\t%0,%2,%3,%4\", operands);
-  else if (REGNO (operands[0]) == REGNO (operands[2]))
+  else if (REGNO (operands[0]) != REGNO (operands[2]))
+    {
+      output_asm_insn (\"move\\t%0,%1\", operands);
+      output_asm_insn (\"ins\\t%0,%2,%3,%4\", operands);
+    }
+  else
     {
       output_asm_insn (\"move\\t%5,%0\", operands);
       output_asm_insn (\"move\\t%0,%1\", operands);
       output_asm_insn (\"ins\\t%0,%5,%3,%4\", operands);
-    }
-  else
-    {
-      output_asm_insn (\"move\\t%0,%1\", operands);
-      output_asm_insn (\"ins\\t%0,%2,%3,%4\", operands);
     }
   return \"\";
 }"
